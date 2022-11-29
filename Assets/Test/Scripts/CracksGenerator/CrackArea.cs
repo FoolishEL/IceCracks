@@ -207,7 +207,7 @@ public class CrackLine : CrackLineBasic
         direction *= usedForce / Ext.TOKEN_MINIMAL_LINE_FORCE_VALUE;
         direction *= Ext.TOKEN_DEFAULT_LINE_LENGTH;
         Vector2 endPointV2 = (startPosition + direction +
-                              Vector2.Perpendicular(direction).normalized * Random.Range(-3f, 3f));
+                              Vector2.Perpendicular(direction).normalized * Random.Range(-1f, 1f));
         Vector2Int endPoint = new Vector2Int((int)endPointV2.x, (int)endPointV2.y);
         var result = new CrackLine(startPosition, endPoint);
         return result;
