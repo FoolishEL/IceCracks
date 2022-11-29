@@ -102,6 +102,7 @@ public static class CrackAreaExtensions
         foreach (var t in circleSegments)
         {
             result.Add((t.start, t.things[0].Item3));
+            result.Add((t.things[^1].Item3, t.end));
             for (int j = 0; j < t.things.Count-1; j++)
             {
                 result.Add((t.things[j].Item3, t.things[j + 1].Item3));
@@ -119,14 +120,16 @@ public static class CrackAreaExtensions
     //TODO: replace this values.
     #region Core Values
 
-    public const float TOKEN_DEBUG_INITIAL_CRACK_FORCE = 25f;
+    public const float TOKEN_DEBUG_INITIAL_CRACK_FORCE = 30f;
     
     public const float TOKEN_DEFAULT_CORE_FORCE_VALUE = 5f;
-    public const float TOKEN_MINIMAL_LINE_FORCE_VALUE = 5f;
-    public const float TOKEN_MAXIMUM_LINE_FORCE_VALUE = 11f;
+    public const float TOKEN_MINIMAL_LINE_FORCE_VALUE = 2f;
+    public const float TOKEN_MAXIMUM_LINE_FORCE_VALUE = 10f;
     public const float TOKEN_DEFAULT_RADIUS = 40f;
     public const int TOKEN_DEFAULT_SECTORS_COUNT = 8;
     public const float TOKEN_DEFAULT_SECTOR_FRAGMENT_LENGTH = TOKEN_DEFAULT_RADIUS / 5f;
+    public const float TOKEN_DEFAULT_LINE_LENGTH = 20f;
+
     #endregion
 }
 

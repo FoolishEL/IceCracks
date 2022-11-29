@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -58,7 +57,8 @@ public class CrackVisualizer : MonoBehaviour
     {
         if (rectTransform is not null)
         {
-            return new Vector2Int((int)rectTransform.sizeDelta.x, (int)rectTransform.sizeDelta.y);
+            var sizeDelta = rectTransform.sizeDelta;
+            return new Vector2Int((int)sizeDelta.x, (int)sizeDelta.y);
         }
         return Vector2Int.zero;
     }
