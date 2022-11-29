@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 using ProtoTurtle.BitmapDrawing;
@@ -21,20 +23,29 @@ public class CrackVisualizer : MonoBehaviour
         if(_isInited)
             return;
         _isInited = true;
-        
         rectTransform = transform as RectTransform;
         texture2D = new Texture2D((int)rectTransform.sizeDelta.x, (int)rectTransform.sizeDelta.y);
         rawImage.texture = texture2D;
     }
     
-    public void DrawCracks(IEnumerable<(Vector2Int,Vector2Int)> lines)
+    public async Task DrawCracks(IEnumerable<(Vector2Int,Vector2Int)> lines,Vector2Int center)
+    {
+        //TODO: refactor this
+        lines = lines.OrderBy(c => Vector2Int.Distance(center, c.Item1));
+        var first = lines.Where((item, index) => index % 3 == 0);
+        var second = lines.Where((item, index) => index % 3 == 1);
+        var third = lines.Where((item, index) => index % 3 == 2);
+        await Task.WhenAll(RawDraw(first), RawDraw(second), RawDraw(third));
+    }
+
+    private async Task RawDraw(IEnumerable<(Vector2Int,Vector2Int)> lines)
     {
         foreach (var line in lines)
         {
             texture2D.DrawLine(line.Item1, line.Item2, color);
+            texture2D.Apply();
+            await Task.Yield();
         }
-        texture2D.Apply();
-        rawImage.texture = texture2D;
     }
     
     public void DebugDrawPoint(Vector2Int position)

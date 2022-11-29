@@ -15,7 +15,6 @@ public class CrackGenerator : MonoBehaviour , IPointerClickHandler
     private List<(Vector2, Vector2)> lines;
     private bool _isInited = false;
 
-    private const float INITIAL_PRESS_FORCE = 20f;
     private CrackModel model;
 
     public void Initialize(CrackVisualizer crackVisualizer)
@@ -42,7 +41,7 @@ public class CrackGenerator : MonoBehaviour , IPointerClickHandler
         Vector2 relativeToBottomLeft = relativeToCenter + sizeDelta / 2;
         Vector2Int pos = new Vector2Int((int)relativeToBottomLeft.x, (int)relativeToBottomLeft.y);
         pos.y = (int)sizeDelta.y - pos.y;
-        model.AddCracks(pos, INITIAL_PRESS_FORCE);
-        crackVisualizer.DrawCracks(model.GetPoints());
+        model.AddCracks(pos, CrackAreaExtensions.TOKEN_DEBUG_INITIAL_CRACK_FORCE);
+        crackVisualizer.DrawCracks(model.GetPoints(),pos);
     }
 }

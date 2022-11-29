@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Random = System.Random;
+using Ext = CrackAreaExtensions;
+using Random = UnityEngine.Random;
 
 public abstract class CrackArea
 {
@@ -27,20 +28,23 @@ public class CrackCore : CrackArea
     private readonly List<CrackLineGroup> connectedLines;
     public IReadOnlyList<CrackLineGroup> ConnectedLines => connectedLines;
     private readonly List<(Vector2Int, Vector2Int)> crackedLines;
+    private List<Vector2Int> exitCrackPositions;
 
     public CrackCore(Vector2Int position, float radius, out IReadOnlyList<CrackLineGroup> generated, float force = 10f)
     {
         this.position = position;
         this.radius = radius;
         connectedLines = new List<CrackLineGroup>();
-        if (force > CrackAreaExtensions.TOKEN_DEFAULT_CORE_FORCE_VALUE +
-            CrackAreaExtensions.TOKEN_DEFAULT_LINE_FORCE_VALUE)
+        exitCrackPositions = new List<Vector2Int>();
+        crackedLines = new List<(Vector2Int, Vector2Int)>();
+        GeneratePoints();
+        if (force > Ext.TOKEN_DEFAULT_CORE_FORCE_VALUE +
+            Ext.TOKEN_MINIMAL_LINE_FORCE_VALUE)
         {
-            force -= CrackAreaExtensions.TOKEN_DEFAULT_CORE_FORCE_VALUE;
+            force -= Ext.TOKEN_DEFAULT_CORE_FORCE_VALUE;
             connectedLines.AddRange(ProlongCrack(force));
         }
         generated = connectedLines;
-        crackedLines = new List<(Vector2Int, Vector2Int)>();
     }
     
     public override bool IsIntersect(Vector2 point)
@@ -84,26 +88,36 @@ public class CrackCore : CrackArea
 
     private void GeneratePoints()
     {
-        CrackAreaExtensions.GenerateValuesWithSum(360,
-            ((int)(radius / CrackAreaExtensions.TOKEN_DEFAULT_RADIUS) *
-             CrackAreaExtensions.TOKEN_DEFAULT_SECTORS_COUNT), out var result);
-        List<Vector2Int> positions = new List<Vector2Int>();
+        Ext.GenerateValuesWithSum(360,
+            ((int)(radius / Ext.TOKEN_DEFAULT_RADIUS) *
+             Ext.TOKEN_DEFAULT_SECTORS_COUNT), out var result);
         int k = 0;
         foreach (var p in result)
         {
-            CrackAreaExtensions.SphericalToCartesian(radius,p,out var vector);
+            Ext.SphericalToCartesian(radius,p,out var vector);
             vector += position;
-            positions.Add(new Vector2Int(Mathf.FloorToInt(vector.x), Mathf.FloorToInt(vector.y)));
+            exitCrackPositions.Add(new Vector2Int(Mathf.FloorToInt(vector.x), Mathf.FloorToInt(vector.y)));
         }
-
-        crackedLines.AddRange(CrackAreaExtensions.SplitCoreLines(positions, position));
+        crackedLines.AddRange(Ext.SplitCoreLines(exitCrackPositions, position));
     }
     
 
     public IEnumerable<CrackLineGroup> ProlongCrack(float force)
     {
         var newCracks = new List<CrackLineGroup>();
-
+        Debug.LogError($"prolonged with force {force}");
+        while (force>Ext.TOKEN_MINIMAL_LINE_FORCE_VALUE)
+        {
+            float currentForce =
+                Random.Range(Ext.TOKEN_MINIMAL_LINE_FORCE_VALUE, Mathf.Min(Ext.TOKEN_MAXIMUM_LINE_FORCE_VALUE, force));
+            force -= currentForce;
+            if (force < Ext.TOKEN_MINIMAL_LINE_FORCE_VALUE)
+            {
+                currentForce += force;
+            }
+            Debug.LogError(currentForce);
+            
+        }
         NotifyInternalStateChanged();
         return newCracks;
     }
@@ -179,8 +193,17 @@ public class CrackLineGroup : CrackLineBasic
 
     public CrackLineGroup(CrackLine initialLine)
     {
+        lines = new List<CrackLine> { initialLine };
+    }
+
+    public CrackLineGroup(float force)
+    {
         lines = new List<CrackLine>();
-        lines.Add(initialLine);
+    }
+
+    public void ProlongCrack(float force)
+    {
+        
     }
     
     public override bool IsIntersect(Vector2 point)

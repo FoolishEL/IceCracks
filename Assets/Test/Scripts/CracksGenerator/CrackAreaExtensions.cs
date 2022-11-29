@@ -46,7 +46,7 @@ public static class CrackAreaExtensions
         vector.y = (sin * tx) + (cos * ty);
     }
 
-    public static IEnumerable<(Vector2Int,Vector2Int)> SplitCoreLines(List<Vector2Int> corePoints,Vector2Int startPos)
+    public static IEnumerable<(Vector2Int,Vector2Int)> SplitCoreLines(IReadOnlyList<Vector2Int> corePoints,Vector2Int startPos)
     {
         
         List<CircleSegment> circleSegments = new List<CircleSegment>();
@@ -69,43 +69,36 @@ public static class CrackAreaExtensions
         return GenerateLines(circleSegments);
     }
 
-    private static IEnumerable<(Vector2Int, Vector2Int)> GenerateLines(List<CircleSegment> circleSegments)
+    private static IEnumerable<(Vector2Int, Vector2Int)> GenerateLines(IReadOnlyList<CircleSegment> circleSegments)
     {
         List<(Vector2Int, Vector2Int)> result = new List<(Vector2Int, Vector2Int)>();
         float maxLength = circleSegments[0].GetLength();
-        for (int i = 0; i < maxLength / TOKEN_DEFAULT_SECTOR_FRAGMENT_LENGTH - 1; i++)
+        for (int i = 0; i < maxLength / TOKEN_DEFAULT_SECTOR_FRAGMENT_LENGTH - 2; i++)
         {
-            circleSegments.ForEach(c=>c.CreateNextThing());
+            foreach (var segment in circleSegments)
+            {
+                segment.CreateNextThing();
+            }
             foreach (var t in circleSegments)
             {
-                var _result = new Vector2Int();
-                Vector2 res;
-                if (Mathf.Abs(t.currentDistance - t.left.currentDistance) >
-                    Mathf.Abs(t.currentDistance - t.right.currentDistance))
-                {
-                    res = Vector2.Lerp(t.left.start, t.left.end, t.left.currentDistance / t.left.GetLength());
-                    _result.x = (int)res.x;
-                    _result.y = (int)res.y;
-                    int pos = t.left.things.Count - 2;
-                    if (pos < 0)
-                        pos = 0;
-                    t.left.things.Insert(pos,
-                        new(t.currentDistance, t, _result));
-                }
-                else
-                {
-                    int pos = t.right.things.Count - 2;
-                    if (pos < 0)
-                        pos = 0;
-                    res = Vector2.Lerp(t.right.start, t.right.end, t.right.currentDistance / t.right.GetLength());
-                    _result.x = (int)res.x;
-                    _result.y = (int)res.y;
-                    t.right.things.Insert(pos,
-                        new(t.currentDistance, t, _result));
-                }
+                var resultingVector = new Vector2Int();
+                var currentLineSegment = Mathf.Abs(t.currentDistance - t.left.currentDistance) >
+                              Mathf.Abs(t.currentDistance - t.right.currentDistance) ? t.left : t.right;
+                
+                int pos = currentLineSegment.things.Count - 2;
+                if (pos < 0)
+                    pos = 0;
+                var resultingTmpVector = Vector2.Lerp(currentLineSegment.start, currentLineSegment.end, currentLineSegment.currentDistance / currentLineSegment.GetLength());
+                resultingVector.x = (int)resultingTmpVector.x;
+                resultingVector.y = (int)resultingTmpVector.y;
+                currentLineSegment.things.Insert(pos,
+                    new(t.currentDistance, t, resultingVector));
             }
         }
-        circleSegments.ForEach(t => t.things = t.things.OrderBy(c => c.Item1).ToList());
+        foreach (var circleSegment in circleSegments)
+        {
+            circleSegment.OrderThings();
+        }
         foreach (var t in circleSegments)
         {
             result.Add((t.start, t.things[0].Item3));
@@ -119,21 +112,18 @@ public static class CrackAreaExtensions
                 }
             }
         }
-        // for (int i = 0; i < circleSegments.Count - 1; i++)
-        // {
-        //     result.Add((circleSegments[i].end, circleSegments[i + 1].end));
-        //     result.Add((circleSegments[i].start, circleSegments[i].end));
-        // }
-        //
-        // result.Add((circleSegments[^1].end, circleSegments[0].end));
-        // result.Add((circleSegments[^1].start, circleSegments[^1].end));
         return result;
     }
-    
+
     //IMPORTANT
-    #region MyRegion
+    //TODO: replace this values.
+    #region Core Values
+
+    public const float TOKEN_DEBUG_INITIAL_CRACK_FORCE = 25f;
+    
     public const float TOKEN_DEFAULT_CORE_FORCE_VALUE = 5f;
-    public const float TOKEN_DEFAULT_LINE_FORCE_VALUE = 5f;
+    public const float TOKEN_MINIMAL_LINE_FORCE_VALUE = 5f;
+    public const float TOKEN_MAXIMUM_LINE_FORCE_VALUE = 11f;
     public const float TOKEN_DEFAULT_RADIUS = 40f;
     public const int TOKEN_DEFAULT_SECTORS_COUNT = 8;
     public const float TOKEN_DEFAULT_SECTOR_FRAGMENT_LENGTH = TOKEN_DEFAULT_RADIUS / 5f;
@@ -148,18 +138,6 @@ public class CircleSegment
     public CircleSegment right;
     public float currentDistance => things.Count == 0 ? 0f : things[^1].Item1;
 
-    public Vector2Int GetStartPosition()
-    {
-        if(things.Count == 1 || things.Count == 0)
-            return start;
-        var result = new Vector2Int();
-        Vector2 res = Vector2.Lerp(start, end, currentDistance / GetLength());
-        result.x = (int)res.x;
-        result.y = (int)res.y;
-        return result;
-        
-    }
-
     public List<(float,CircleSegment,Vector2Int)> things;
     public float GetLength() => Vector2Int.Distance(start, end);
 
@@ -167,11 +145,23 @@ public class CircleSegment
     {
         float min = currentDistance + CrackAreaExtensions.TOKEN_DEFAULT_SECTOR_FRAGMENT_LENGTH * .9f;
         float max = currentDistance + CrackAreaExtensions.TOKEN_DEFAULT_SECTOR_FRAGMENT_LENGTH;
+        if (things.Count == 0)
+        {
+            min += CrackAreaExtensions.TOKEN_DEFAULT_SECTOR_FRAGMENT_LENGTH;
+            max += CrackAreaExtensions.TOKEN_DEFAULT_SECTOR_FRAGMENT_LENGTH;
+        }
         float random = Random.Range(min, max);
         var result = new Vector2Int();
         Vector2 res = Vector2.Lerp(start, end, random / GetLength());
+        if (things.Count > 1)
+        {
+            var perpendicular = Vector2.Perpendicular(end - start).normalized;
+            res += perpendicular * Random.Range(-2f, 2f);
+        }
         result.x = (int)res.x;
         result.y = (int)res.y;
         things.Add((random, this, result));
     }
+
+    public void OrderThings() => things = things.OrderBy(c => c.Item1).ToList();
 }
