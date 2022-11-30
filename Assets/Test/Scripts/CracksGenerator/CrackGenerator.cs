@@ -27,6 +27,11 @@ public class CrackGenerator : MonoBehaviour , IPointerClickHandler
         rectTransform = transform as RectTransform;
     }
 
+    public void Restart()
+    {
+        CreateData();
+    }
+
     private void CreateData()
     {
         lines = new List<(Vector2, Vector2)>();

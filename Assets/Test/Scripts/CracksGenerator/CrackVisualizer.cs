@@ -14,7 +14,6 @@ public class CrackVisualizer : MonoBehaviour
     private Texture2D texture2D;
     private RectTransform rectTransform;
 
-
     private bool _isInited = false;
 
     public void Initialize()
@@ -61,5 +60,11 @@ public class CrackVisualizer : MonoBehaviour
             return new Vector2Int((int)sizeDelta.x, (int)sizeDelta.y);
         }
         return Vector2Int.zero;
+    }
+
+    public void Restart()
+    {
+        texture2D = new Texture2D((int)rectTransform.sizeDelta.x, (int)rectTransform.sizeDelta.y);
+        rawImage.texture = texture2D;
     }
 }

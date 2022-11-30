@@ -120,15 +120,16 @@ public static class CrackAreaExtensions
     //TODO: replace this values.
     #region Core Values
 
-    public const float TOKEN_DEBUG_INITIAL_CRACK_FORCE = 50f;
+    public const float TOKEN_DEBUG_INITIAL_CRACK_FORCE = 60f;
     
     public const float TOKEN_DEFAULT_CORE_FORCE_VALUE = 5f;
     public const float TOKEN_MINIMAL_LINE_FORCE_VALUE = 2f;
-    public const float TOKEN_MAXIMUM_LINE_FORCE_VALUE = 10f;
-    public const float TOKEN_DEFAULT_RADIUS = 40f;
+    public const float TOKEN_MAXIMUM_LINE_FORCE_VALUE = 20f;
+    public const float TOKEN_DEFAULT_RADIUS = 20f;
     public const int TOKEN_DEFAULT_SECTORS_COUNT = 8;
-    public const float TOKEN_DEFAULT_SECTOR_FRAGMENT_LENGTH = TOKEN_DEFAULT_RADIUS / 5f;
-    public const float TOKEN_DEFAULT_LINE_LENGTH = 10f;
+    public const float TOKEN_DEFAULT_SECTOR_FRAGMENT_LENGTH = 10f;
+    public const float TOKEN_DEFAULT_LINE_LENGTH = 13f;
+    public const float TOKEN_DEFAULT_CORE_CIRCLE_RADIUS = 80f;
 
     #endregion
 }

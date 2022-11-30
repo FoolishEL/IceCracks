@@ -18,6 +18,8 @@ public abstract class CrackArea
     public event Action OnInternalStateChanged = delegate { };
 
     protected virtual void NotifyInternalStateChanged() => OnInternalStateChanged.Invoke();
+
+    public bool HasStateChangedSinceLastPointsGet { get; protected set; }
 }
 
 public class CrackCore : CrackArea
@@ -32,6 +34,7 @@ public class CrackCore : CrackArea
 
     public CrackCore(Vector2Int position, float radius, out IReadOnlyList<CrackLineGroup> generated, float force = 10f)
     {
+        HasStateChangedSinceLastPointsGet = true;
         this.position = position;
         this.radius = radius;
         connectedLines = new List<CrackLineGroup>();
@@ -83,6 +86,7 @@ public class CrackCore : CrackArea
     {
         if (crackedLines is null || crackedLines.Count == 0)
             GeneratePoints();
+        HasStateChangedSinceLastPointsGet = false;
         return crackedLines;
     }
 
@@ -104,6 +108,38 @@ public class CrackCore : CrackArea
 
     public IEnumerable<CrackLineGroup> ProlongCrack(float force)
     {
+        var generatedCracks = new List<CrackLineGroup>();
+        if (connectedLines.Count == 0)
+            generatedCracks.AddRange(RawProlongCreate(force));
+        else
+        {
+            //TODO: upd!
+            float forceCreate = 0f;
+            float forceAdditive = force;
+            generatedCracks.AddRange(RawProlongCreate(forceCreate));
+            ProlongExistedLines(forceAdditive);
+        }
+        return generatedCracks;
+    }
+
+    private void ProlongExistedLines(float force)
+    {
+        float additiveForce = 0;
+        var connectedLinesCopy = new List<CrackLineGroup>();
+        connectedLinesCopy.AddRange(connectedLines);
+        while (force > Ext.TOKEN_MAXIMUM_LINE_FORCE_VALUE +Ext.TOKEN_MINIMAL_LINE_FORCE_VALUE || connectedLinesCopy.Count > 2)
+        {
+            additiveForce = Random.Range(Ext.TOKEN_MINIMAL_LINE_FORCE_VALUE, Ext.TOKEN_MAXIMUM_LINE_FORCE_VALUE);
+            var selectedLine = connectedLinesCopy[Random.Range(0, connectedLinesCopy.Count)];
+            selectedLine.ProlongCrack(additiveForce);
+            force -= additiveForce;
+            connectedLinesCopy.Remove(selectedLine);
+        }
+        connectedLinesCopy.First().ProlongCrack(force);
+    }
+
+    private IEnumerable<CrackLineGroup> RawProlongCreate(float force)
+    {
         var newCracks = new List<CrackLineGroup>();
         var selectedPositions = new List<Vector2Int>();
         while (force>Ext.TOKEN_MINIMAL_LINE_FORCE_VALUE)
@@ -116,39 +152,55 @@ public class CrackCore : CrackArea
                 currentForce += force;
             }
 
-            var newPosition = GetStartPosition(selectedPositions);
-            newCracks.Add(
-                CrackLineGroup.CreateGroupByForceDirectionStartPosition(currentForce, newPosition - position,
-                    newPosition));
-            selectedPositions.Add(newPosition);
+            var generatedPosition = GetStartPosition(selectedPositions);
+            if (generatedPosition.HasValue)
+            {
+                var newPosition = generatedPosition.Value;
+                newCracks.Add(
+                    CrackLineGroup.CreateGroupByForceDirectionStartPosition(currentForce, newPosition - position,
+                        newPosition));
+                selectedPositions.Add(newPosition);
+            }
+            else
+            {
+                Debug.LogError("Error on generation! No spare point!");
+                return newCracks;
+            }
         }
         NotifyInternalStateChanged();
         return newCracks;
     }
 
-    private Vector2Int GetStartPosition(IReadOnlyList<Vector2Int> selectedPositions)
+    private IEnumerable<Vector2Int> GetSparePositions()
     {
-        if (selectedPositions is null || selectedPositions.Count == 0)
-        {
-            return exitCrackPositions[Random.Range(0, exitCrackPositions.Count)];
-        }
-
         var sparePositions = new List<Vector2Int>();
         sparePositions.AddRange(exitCrackPositions);
+        foreach (var connectedLine in connectedLines)
+        {
+            //TODO: Random generation values hardcoded!
+            if (connectedLine.GetLinesAmount() != 0)
+            {
+                sparePositions.Remove(connectedLine.startPoint);
+            }
+        }
+        return sparePositions;
+    }
+
+    private Vector2Int? GetStartPosition(IReadOnlyList<Vector2Int> selectedPositions)
+    {
+        List<Vector2Int> sparePositions = new List<Vector2Int>();
+        sparePositions.AddRange(GetSparePositions());
+        if (sparePositions.Count == 0)
+            return null;
+        
+        if (selectedPositions is null || selectedPositions.Count == 0)
+        {
+            return sparePositions[Random.Range(0, sparePositions.Count)];
+        }
+        
         foreach (var sPos in selectedPositions)
         {
-#if UNITY_EDITOR
-            if (
-#endif
-                sparePositions.Remove(sPos)
-#if !UNITY_EDITOR
-                ;
-#else
-                )
-            {
-                Debug.LogError($"Removed {sPos}");
-            }
-#endif
+            sparePositions.Remove(sPos);
         }
         int startSparePosCount = sparePositions.Count;
         sparePositions = sparePositions.OrderByDescending(c => selectedPositions.Sum(k => Vector2Int.Distance(c, k))).ToList();
@@ -156,15 +208,14 @@ public class CrackCore : CrackArea
         {
             sparePositions.RemoveAt(sparePositions.Count - 1);
         }
-
+        
         return sparePositions[Random.Range(0, sparePositions.Count)];
     }
 }
 
 public abstract class CrackLineBasic : CrackArea
 {
-    public readonly Vector2Int startPoint;
-    public readonly Vector2Int endPoint;
+    public Vector2Int startPoint { get; protected set; }
     public abstract Vector2 Direction { get; }
     public abstract float Length { get; }
 }
@@ -182,6 +233,7 @@ public class CrackLine : CrackLineBasic
 
     public CrackLine(Vector2Int startPoint, Vector2Int endPoint)
     {
+        HasStateChangedSinceLastPointsGet = true;
         this.endPoint = endPoint;
         this.startPoint = startPoint;
         length = Vector2Int.Distance(endPoint, startPoint) / 2f ;
@@ -263,6 +315,7 @@ public class CrackLine : CrackLineBasic
         List<CrackLine> result = new List<CrackLine>();
         while (force > Ext.TOKEN_MINIMAL_LINE_FORCE_VALUE * 2f)
         {
+            //TODO: possible infinite loop!
             force *= 1.1f;
             result.Add(GenerateCrackLineWithForce(ref force, startPosition, direction));
             var lastRes = result.Last();
@@ -300,7 +353,11 @@ public class CrackLine : CrackLineBasic
         _ => throw new NotImplementedException()
     };
 
-    public override IReadOnlyCollection<(Vector2Int, Vector2Int)> GetPoints() => pointsGroup;
+    public override IReadOnlyCollection<(Vector2Int, Vector2Int)> GetPoints()
+    {
+        HasStateChangedSinceLastPointsGet = false;
+        return pointsGroup;
+    }
 
     public float GetLength() => Vector2Int.Distance(startPoint, endPoint);
 }
@@ -308,6 +365,7 @@ public class CrackLine : CrackLineBasic
 public class CrackLineGroup : CrackLineBasic
 {
     private List<List<CrackLine>> lines;
+    public int GetLinesAmount() => lines.Count;
 
     public IReadOnlyList<CrackLine> Lines
     {
@@ -326,10 +384,12 @@ public class CrackLineGroup : CrackLineBasic
     {
         CrackLineGroup result = new CrackLineGroup
         {
-            lines = new List<List<CrackLine>>()
+            HasStateChangedSinceLastPointsGet = true,
+            lines = new List<List<CrackLine>>(),
+            startPoint = startPosition
         };
         //TODO: refactor this
-        if (force > Ext.TOKEN_MINIMAL_LINE_FORCE_VALUE * 2)
+        if (force > Ext.TOKEN_MINIMAL_LINE_FORCE_VALUE * 2 || Random.Range(0f, 1f) > .6f)
         {
             result.lines.AddRange(CrackLine.GenerateMultipleLinesWithForce(force, startPosition, direction));
         }
@@ -344,6 +404,11 @@ public class CrackLineGroup : CrackLineBasic
     public void ProlongCrack(float force)
     {
         //TODO: dont forget to notify internal state change if added new list of "lines"!
+        if (lines.Count == 3)
+        {
+            
+        }
+        NotifyInternalStateChanged();
     }
     
     public override bool IsIntersect(Vector2 point)
@@ -368,11 +433,15 @@ public class CrackLineGroup : CrackLineBasic
     {
         cachedLines.Clear();
         cachedLines = null;
+        HasStateChangedSinceLastPointsGet = true;
         base.NotifyInternalStateChanged();
     }
 
-    public override IReadOnlyCollection<(Vector2Int, Vector2Int)> GetPoints() =>
-        Lines.SelectMany(c => c.GetPoints()).ToList();
+    public override IReadOnlyCollection<(Vector2Int, Vector2Int)> GetPoints()
+    {
+        HasStateChangedSinceLastPointsGet = false;
+        return Lines.SelectMany(c => c.GetPoints()).ToList();
+    }
 
     public float GetLength() => Lines.Sum(c => c.GetLength());
 }

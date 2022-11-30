@@ -10,4 +10,11 @@ public class CrackManager : MonoBehaviour
         crackVisualizer.Initialize();
         crackGenerator.Initialize(crackVisualizer);
     }
+    
+    [ContextMenu(nameof(Restart))]
+    private void Restart()
+    {
+        crackVisualizer.Restart();
+        crackGenerator.Restart();
+    }
 }

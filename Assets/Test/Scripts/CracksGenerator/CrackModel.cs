@@ -20,7 +20,8 @@ public class CrackModel
             return result;
         foreach (var c in cracks)
         {
-            result.AddRange(c.GetPoints());
+            if (c.HasStateChangedSinceLastPointsGet)
+                result.AddRange(c.GetPoints());
         }
         return result;
     }
@@ -52,7 +53,7 @@ public class CrackModel
         }
         if (!isCreated)
         {
-            CrackCore core = new CrackCore(position, 100f, out var generated, force);
+            CrackCore core = new CrackCore(position, CrackAreaExtensions.TOKEN_DEFAULT_CORE_CIRCLE_RADIUS, out var generated, force);
             cracks.Add(core);
             cracks.AddRange(generated);
         }
