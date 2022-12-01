@@ -1,3 +1,4 @@
+using System.IO;
 using UnityEngine;
 
 public static class MathExtensions
@@ -35,5 +36,33 @@ public static class MathExtensions
         firstResult = vector.x * vector.x * initialValue + additivePart;
         secondResult = vector.y * vector.y * initialValue + additivePart;
         thirdResult = vector.z * vector.z * initialValue + additivePart;
+    }
+    
+    /// <summary>
+    /// Get random true/false depends on percent probability.
+    /// throw if value is out of range
+    /// </summary>
+    /// <param name="percent">0f..1f</param>
+    public static bool GetRandomWithPercent(float percent)
+    {
+        if (percent < 0f || percent > 1f)
+        {
+            throw new InvalidDataException();
+        }
+        return Random.Range(Mathf.Epsilon, 1f) <= percent;
+    }
+    
+    /// <summary>
+    /// Get random true/false depends on percent probability.
+    /// throw if value is out of range 
+    /// </summary>
+    /// <param name="percent">0..100</param>
+    public static bool GetRandomWithPercent(int percent)
+    {
+        if (percent < 0 || percent > 100)
+        {
+            throw new InvalidDataException();
+        }
+        return Random.Range(1, 101) <= percent;
     }
 }
