@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 
 public static class MathExtensions
@@ -64,5 +66,31 @@ public static class MathExtensions
             throw new InvalidDataException();
         }
         return Random.Range(1, 101) <= percent;
+    }
+
+    public static void SelectOneFromManyByPercents(IReadOnlyList<float> values, out int idOfSelected)
+    {
+        idOfSelected = -1;
+        var tempPercents = new List<float>();
+        tempPercents.AddRange(values);
+        var sum = tempPercents.Sum();
+        if (Mathf.Approximately(sum,1f))
+        {
+            tempPercents.ForEach(c =>c /= sum);
+        }
+        for (int i = 1; i < tempPercents.Count; i++)
+        {
+            tempPercents[i] += tempPercents[i - 1];
+        }
+
+        float random = Random.Range(0f, 1f);
+        for (int i = 0; i < tempPercents.Count; i++)
+        {
+            if (random < tempPercents[i])
+            {
+                idOfSelected = i;
+                break;
+            }
+        }
     }
 }

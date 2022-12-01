@@ -210,7 +210,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 800}
+  m_SizeDelta: {x: 0, y: 820}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &798824700
 MonoBehaviour:
@@ -225,7 +225,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rawImage: {fileID: 798824701}
-  color: {r: 0.9811321, g: 0, b: 0, a: 1}
+  color: {r: 0, g: 0.024314318, b: 0.5754717, a: 1}
+  texture2D: {fileID: 2800000, guid: 78d9700918a2549a79eb25097c3c94c2, type: 3}
 --- !u!114 &798824701
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -246,7 +247,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 0}
+  m_Texture: {fileID: 2800000, guid: 78d9700918a2549a79eb25097c3c94c2, type: 3}
   m_UVRect:
     serializedVersion: 2
     x: 0
@@ -289,7 +290,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   minStep: 0.1
   maxStep: 1
-  crackVisualizer: {fileID: 798824700}
 --- !u!114 &798824705
 MonoBehaviour:
   m_ObjectHideFlags: 0
