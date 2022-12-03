@@ -150,13 +150,13 @@ namespace IceCracks.CracksGeneration.Extensions
 
         #region Core Values
 
-        private const float TOKEN_MAX_PERCENTAGE_SUPERIORITY = .7f;
+        private const float TOKEN_MAX_PERCENTAGE_SUPERIORITY = .9f;
 
 
         public const float TOKEN_DEBUG_INITIAL_CRACK_FORCE = 40f;
         public const float TOKEN_DEFAULT_CORE_FORCE_VALUE = 5f;
-        public const float TOKEN_MINIMAL_LINE_FORCE_VALUE = 2f;
-        public const float TOKEN_MAXIMUM_LINE_FORCE_VALUE = 20f;
+        public const float TOKEN_MINIMAL_LINE_FORCE_VALUE = 5f;
+        public const float TOKEN_MAXIMUM_LINE_FORCE_VALUE = 15f;
         public const float TOKEN_DEFAULT_RADIUS = 20f;
         public const int TOKEN_DEFAULT_SECTORS_COUNT = 6;
         public const float TOKEN_DEFAULT_SECTOR_FRAGMENT_LENGTH = 20f;

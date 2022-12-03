@@ -39,7 +39,8 @@ namespace IceCracks.CracksGeneration.Models
                 initialDirection = direction,
             };
             //TODO: refactor this
-            if (force > CrackExtensions.TOKEN_MINIMAL_LINE_FORCE_VALUE * 2 || Random.Range(0f, 1f) > .6f)
+            if (force > CrackExtensions.TOKEN_MINIMAL_LINE_FORCE_VALUE * 2 ||
+                MathExtensions.GetRandomWithPercent(.6f))
             {
                 result.lines.AddRange(CrackLine.GenerateMultipleLinesWithForce(force, startPosition, direction));
             }
@@ -63,13 +64,17 @@ namespace IceCracks.CracksGeneration.Models
             var lengths = lines.Select(c => c.Sum(k => k.Length)).ToList();
             if (lines.Count >= 2)
             {
-                if (CrackExtensions.IsOneLineFarMoreLonger(lengths, out var resultIfOneLonger) && lines.Count < 5)
+                if (CrackExtensions.IsOneLineFarMoreLonger(lengths, out var resultIfOneLonger) && lines.Count < 4)
                 {
                     CreateBranchFromSelectedLine(resultIfOneLonger, force);
                 }
                 else
                 {
                     MathExtensions.SelectOneFromManyByPercents(lengths, out var result);
+                    if (result == -1)
+                    {
+                        Debug.LogError("Fuck!");
+                    }
                     var selectedLine = lines[result];
                     var lastLine = selectedLine.Last();
                     selectedLine.AddRange(
@@ -96,7 +101,7 @@ namespace IceCracks.CracksGeneration.Models
                     else
                     {
                         //TODO: here was nre, i fixed somehow, but not shure!
-                        CrackLine lastLine = lastLine = lines[0][^1];
+                        CrackLine lastLine = lines[0][^1];
                         lines[0].AddRange(
                             CrackLine.GenerateMultipleLinedCrackLines(force, lastLine.endPoint, lastLine.Direction));
                     }
@@ -109,29 +114,29 @@ namespace IceCracks.CracksGeneration.Models
         private void CreateBranchFromSelectedLine(int lineId, float force)
         {
             var currentLine = lines[lineId];
-            float maxLength = lines.Where(g => g != currentLine).Max(c => c.Sum(k => k.Length));
-            float lengthSum = 0f;
-            int startPositionId = -1;
-            for (int i = 0; i < currentLine.Count; i++)
-            {
-                if (lengthSum > maxLength)
-                {
-                    startPositionId = i - 1;
-                    break;
-                }
-
-                lengthSum += currentLine[i].GetLength();
-            }
-
-            if (startPositionId == -1)
-            {
+            //float maxLength = lines.Where(g => g != currentLine).Max(c => c.Sum(k => k.Length));
+            //float lengthSum = 0f;
+            int startPositionId = currentLine.Count - 2;
+            if (startPositionId < 0)
                 startPositionId = currentLine.Count - 2;
-            }
+            // for (int i = 0; i < currentLine.Count; i++)
+            // {
+            //     if (lengthSum > maxLength)
+            //     {
+            //         startPositionId = i - 1;
+            //         break;
+            //     }
+            //
+            //     lengthSum += currentLine[i].GetLength();
+            // }
+            //
+            // if (startPositionId == -1)
+            // {
+            //     startPositionId = currentLine.Count - 2;
+            // }
 
-            Vector2 direction = currentLine[startPositionId].Direction;
-
-            direction = Vector2.Perpendicular(currentLine[startPositionId].Direction) * Random.Range(-.1f, .1f) +
-                        currentLine[startPositionId].Direction;
+            var direction = Vector2.Perpendicular(currentLine[startPositionId].Direction) * Random.Range(-.1f, .1f) +
+                            currentLine[startPositionId].Direction;
             direction.Normalize();
 
             lines.Add(new List<CrackLine>());

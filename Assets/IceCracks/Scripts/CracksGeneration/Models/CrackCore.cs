@@ -31,7 +31,7 @@ namespace IceCracks.CracksGeneration.Models
                 CrackExtensions.TOKEN_MINIMAL_LINE_FORCE_VALUE)
             {
                 force -= CrackExtensions.TOKEN_DEFAULT_CORE_FORCE_VALUE;
-                connectedLines.AddRange(ProlongCrack(force));
+                ProlongCrack(force);
             }
             generated = connectedLines;
         }
@@ -91,7 +91,10 @@ namespace IceCracks.CracksGeneration.Models
             crackedLines.AddRange(CrackExtensions.SplitCoreLines(exitCrackPositions, position));
         }
     
-
+        /// <summary>
+        /// Prolongs cracks with given force.
+        /// NOTE: if using internal don't add generated new cracks to crackedLines;
+        /// </summary>
         public IEnumerable<CrackLineGroup> ProlongCrack(float force)
         {
             var generatedCracks = new List<CrackLineGroup>();
@@ -108,7 +111,10 @@ namespace IceCracks.CracksGeneration.Models
                 }
                 else
                 {
-                    if (spareOuterPoints.Count > connectedLines.Count)
+                    //spareOuterPoints.Count > connectedLines.Count
+                    //TODO: move .7 to constants!
+                    if ((float)spareOuterPoints.Count / exitCrackPositions.Count > .7f ||
+                        MathExtensions.GetRandomWithPercent(.8f))
                     {
                         int canCreate = Mathf.FloorToInt(force) % (int)CrackExtensions.TOKEN_MINIMAL_LINE_FORCE_VALUE;
                         if (canCreate >= 3)
@@ -122,18 +128,24 @@ namespace IceCracks.CracksGeneration.Models
                             forceAdditive = 0f;
                         }
                     }
+                    else
+                    {
+                        forceAdditive = force;
+                    }
                 }
 
                 //TODO: upd!
-                generatedCracks.AddRange(RawProlongCreate(forceCreate));
-                ProlongExistedLines(forceAdditive);
+                if (forceCreate > CrackExtensions.TOKEN_MINIMAL_LINE_FORCE_VALUE)
+                    generatedCracks.AddRange(RawProlongCreate(forceCreate));
+                if (forceAdditive > CrackExtensions.TOKEN_MINIMAL_LINE_FORCE_VALUE)
+                    ProlongExistedLines(forceAdditive);
             }
+            connectedLines.AddRange(generatedCracks);
             return generatedCracks;
         }
 
         private void ProlongExistedLines(float force)
         {
-            float additiveForce = 0;
             if (connectedLines.Count == 0)
             {
                 Debug.LogError("!!!!!");
@@ -143,7 +155,7 @@ namespace IceCracks.CracksGeneration.Models
             while (force > CrackExtensions.TOKEN_MAXIMUM_LINE_FORCE_VALUE +
                    CrackExtensions.TOKEN_MINIMAL_LINE_FORCE_VALUE && connectedLinesCopy.Count > 2)
             {
-                additiveForce = Random.Range(CrackExtensions.TOKEN_MINIMAL_LINE_FORCE_VALUE, CrackExtensions.TOKEN_MAXIMUM_LINE_FORCE_VALUE);
+                var additiveForce = Random.Range(CrackExtensions.TOKEN_MINIMAL_LINE_FORCE_VALUE, CrackExtensions.TOKEN_MAXIMUM_LINE_FORCE_VALUE);
                 var selectedLine = connectedLinesCopy[Random.Range(0, connectedLinesCopy.Count)];
                 selectedLine.ProlongCrack(additiveForce);
                 force -= additiveForce;
@@ -183,6 +195,7 @@ namespace IceCracks.CracksGeneration.Models
                 else
                 {
                     Debug.LogError("Error on generation! No spare point!");
+                    NotifyInternalStateChanged();
                     return newCracks;
                 }
             }
@@ -227,7 +240,9 @@ namespace IceCracks.CracksGeneration.Models
             {
                 sparePositions.RemoveAt(sparePositions.Count - 1);
             }
-        
+
+            if (sparePositions.Count == 0)
+                return null;
             return sparePositions[Random.Range(0, sparePositions.Count)];
         }
     }

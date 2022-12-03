@@ -8,12 +8,12 @@ public static class MathExtensions
     public static int RandomCountWithExponentialHardnessIncrease(int maxValueInclusive,bool canBeZero = true)
     {
         //TODO: need testing!
-        if (canBeZero)
-            maxValueInclusive--;
-        float rndValue = Random.Range(0f, Mathf.Exp(maxValueInclusive));
+        float rndValue = Random.Range(Mathf.Exp(canBeZero ? 0 : 1) + .1f, Mathf.Exp(maxValueInclusive + 1)) - .1f;
         int result = Mathf.FloorToInt(Mathf.Log(rndValue));
-        if (canBeZero)
-            result++;
+        if (result < 1)
+        {
+            Debug.LogError("Error!");
+        }
         return result;
     }
 

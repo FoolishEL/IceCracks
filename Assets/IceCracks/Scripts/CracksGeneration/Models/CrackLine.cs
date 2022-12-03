@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -14,23 +15,30 @@ namespace IceCracks.CracksGeneration.Models
         public readonly Vector2Int endPoint;
         public override Vector2 Direction => ((Vector2)(endPoint - startPoint)).normalized;
         public override float Length => length;
-    
+
         private readonly float length;
         private readonly Vector2 centerPoint;
         private List<(Vector2Int, Vector2Int)> pointsGroup;
 
-        public CrackLine(Vector2Int startPoint, Vector2Int endPoint,float force)
+        public CrackLine(Vector2Int startPoint, Vector2Int endPoint, float force)
         {
+#if UNITY_EDITOR
+            if (startPoint == endPoint || Mathf.Approximately(0f, force))
+            {
+                throw new ArgumentException();
+            }
+#endif
             HasStateChangedSinceLastPointsGet = true;
             this.endPoint = endPoint;
             this.startPoint = startPoint;
-            length = Vector2Int.Distance(endPoint, startPoint) / 2f ;
+            length = Vector2Int.Distance(endPoint, startPoint) / 2f;
             centerPoint = ((Vector2)startPoint + endPoint) / 2;
             pointsGroup = new List<(Vector2Int, Vector2Int)> { (startPoint, endPoint) };
             storedForce = force;
         }
 
-        public static CrackLine GenerateCrackLineWithForce(ref float force, Vector2Int startPosition, Vector2 direction,bool useExcessForce = false)
+        public static CrackLine GenerateCrackLineWithForce(ref float force, Vector2Int startPosition, Vector2 direction,
+            bool useExcessForce = false)
         {
             float usedForce = 0f;
             if (useExcessForce)
@@ -44,11 +52,13 @@ namespace IceCracks.CracksGeneration.Models
                     Mathf.Min(CrackExtensions.TOKEN_MAXIMUM_LINE_FORCE_VALUE, force));
                 force -= usedForce;
             }
+
             direction.Normalize();
             direction *= usedForce / CrackExtensions.TOKEN_MINIMAL_LINE_FORCE_VALUE;
             direction *= CrackExtensions.TOKEN_DEFAULT_LINE_LENGTH;
             Vector2 endPointV2 = (startPosition + direction +
-                                  Vector2.Perpendicular(direction).normalized * Random.Range(-1f, 1f));
+                                  Vector2.Perpendicular(direction).normalized * direction.magnitude * .1f *
+                                  Random.Range(-1f, 1f));
             Vector2Int endPoint = new Vector2Int((int)endPointV2.x, (int)endPointV2.y);
             var result = new CrackLine(startPosition, endPoint, usedForce);
             return result;
@@ -57,21 +67,17 @@ namespace IceCracks.CracksGeneration.Models
         public static List<List<CrackLine>> GenerateMultipleLinesWithForce(float force, Vector2Int startPosition,
             Vector2 direction)
         {
-            int maxCount = Mathf.RoundToInt(force / CrackExtensions.TOKEN_MINIMAL_LINE_FORCE_VALUE);
+            int maxCount = Mathf.FloorToInt(force / CrackExtensions.TOKEN_MINIMAL_LINE_FORCE_VALUE);
             int randomCount = MathExtensions.RandomCountWithExponentialHardnessIncrease(Mathf.Min(maxCount, 3), false);
             List<List<CrackLine>> result = new List<List<CrackLine>>();
             switch (randomCount)
             {
-                case 1:
-                    result.Add(new List<CrackLine>());
-                    result[0].AddRange(GenerateMultipleLinedCrackLines(force, startPosition, direction));
-                    break;
                 case 2:
                 {
                     MathExtensions.SplitFloatByTwo(force * 1.5f, out var first, out var second);
                     result.Add(new List<CrackLine>());
                     result.Add(new List<CrackLine>());
-                    Vector2 randVal = Vector2.Perpendicular(direction).normalized;
+                    Vector2 randVal = Vector2.Perpendicular(direction).normalized * direction.magnitude * .1f;
                     result[0].AddRange(GenerateMultipleLinedCrackLines(first, startPosition,
                         direction + randVal * Random.Range(-6, -2)));
                     result[1].AddRange(GenerateMultipleLinedCrackLines(second, startPosition,
@@ -80,11 +86,12 @@ namespace IceCracks.CracksGeneration.Models
                     break;
                 case 3:
                 {
-                    MathExtensions.SplitFloatByThree(force * 2f, out var first, out var second, out var third);result.Add(new List<CrackLine>());
+                    MathExtensions.SplitFloatByThree(force * 2f, out var first, out var second, out var third);
                     result.Add(new List<CrackLine>());
                     result.Add(new List<CrackLine>());
                     result.Add(new List<CrackLine>());
-                    Vector2 randVal = Vector2.Perpendicular(direction).normalized;
+                    result.Add(new List<CrackLine>());
+                    Vector2 randVal = Vector2.Perpendicular(direction).normalized * direction.magnitude * .1f;
                     result[0].AddRange(GenerateMultipleLinedCrackLines(first, startPosition,
                         direction + randVal * Random.Range(-7, -3)));
                     result[1].AddRange(GenerateMultipleLinedCrackLines(second, startPosition,
@@ -93,8 +100,12 @@ namespace IceCracks.CracksGeneration.Models
                         direction + randVal * Random.Range(2, -7)));
                 }
                     break;
+                default:
+                    result.Add(new List<CrackLine>());
+                    result[0].AddRange(GenerateMultipleLinedCrackLines(force, startPosition, direction));
+                    break;
             }
-        
+
             return result;
         }
 
@@ -102,17 +113,17 @@ namespace IceCracks.CracksGeneration.Models
             Vector2 direction)
         {
             List<CrackLine> result = new List<CrackLine>();
-            while (force > CrackExtensions.TOKEN_MINIMAL_LINE_FORCE_VALUE * 2f)
+            do
             {
                 //TODO: possible infinite loop!
                 force *= 1.1f;
-                result.Add(GenerateCrackLineWithForce(ref force, startPosition, direction));
-                var lastRes = result.Last();
-                startPosition = lastRes.endPoint;
-                direction = lastRes.Direction;
-            }
-
-            result.Add(GenerateCrackLineWithForce(ref force, startPosition, direction, true));
+                var generatedCrackLine = GenerateCrackLineWithForce(ref force, startPosition, direction);
+                result.Add(generatedCrackLine);
+                startPosition = generatedCrackLine.endPoint;
+                direction = generatedCrackLine.Direction;
+            } while (force > CrackExtensions.TOKEN_MAXIMUM_LINE_FORCE_VALUE * 2f);
+            if (force >= CrackExtensions.TOKEN_MINIMAL_LINE_FORCE_VALUE)
+                result.Add(GenerateCrackLineWithForce(ref force, startPosition, direction, true));
             return result;
         }
 
@@ -131,6 +142,7 @@ namespace IceCracks.CracksGeneration.Models
                 if (IsIntersect(Vector2.Lerp(sPoint, ePoint, step)))
                     return true;
             }
+
             return false;
         }
 
@@ -138,7 +150,7 @@ namespace IceCracks.CracksGeneration.Models
         {
             CrackCore core => core.IsIntersected(this),
             CrackLine line => this.IsIntersected(line),
-            CrackLineGroup group => group.Lines.Any(c=>c.IsIntersected(this)),
+            CrackLineGroup group => group.Lines.Any(c => c.IsIntersected(this)),
             _ => throw new NotImplementedException()
         };
 
