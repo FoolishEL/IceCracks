@@ -18,13 +18,13 @@ namespace IceCracks.CracksGeneration.Models
 
         protected virtual void NotifyInternalStateChanged() => OnInternalStateChanged.Invoke();
 
-        public bool HasStateChangedSinceLastPointsGet { get; protected set; }
+        public bool hasStateChangedSinceLastPointsGet { get; protected set; }
     }
 
     public abstract class CrackLineBasic : CrackArea
     {
         public Vector2Int startPoint { get; protected set; }
-        public abstract Vector2 Direction { get; }
+        public abstract Vector2 direction { get; }
         public abstract float Length { get; }
 
         public float storedForce { get; protected set; }

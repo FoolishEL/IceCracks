@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+//using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -10,23 +10,25 @@ namespace IceCracks.CracksGeneration.Generation
     [RequireComponent(typeof(Graphic))]
     public class CrackGenerator : MonoBehaviour, IPointerClickHandler
     {
+        /*
         [SerializeField] private float minStep = .1f;
         [SerializeField] private float maxStep = 1f;
+        */
 
         private CrackVisualizer crackVisualizer;
         private RectTransform rectTransform;
-        private List<(Vector2, Vector2)> lines;
-        private bool _isInited = false;
+        //private List<(Vector2, Vector2)> lines;
+        private bool isInitialized;
 
         private CrackModel model;
 
-        public void Initialize(CrackVisualizer crackVisualizer)
+        public void Initialize(CrackVisualizer visualizer)
         {
-            if (_isInited)
+            if (isInitialized)
                 return;
-            _isInited = true;
-
-            this.crackVisualizer = crackVisualizer;
+            isInitialized = true;
+            
+            crackVisualizer = visualizer;
             CreateData();
             rectTransform = transform as RectTransform;
         }
@@ -38,7 +40,7 @@ namespace IceCracks.CracksGeneration.Generation
 
         private void CreateData()
         {
-            lines = new List<(Vector2, Vector2)>();
+            //lines = new List<(Vector2, Vector2)>();
             model = new CrackModel(crackVisualizer.GetTextureSize());
         }
 

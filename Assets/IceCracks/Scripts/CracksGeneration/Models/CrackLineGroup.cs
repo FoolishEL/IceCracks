@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 namespace IceCracks.CracksGeneration.Models
 {
+    using Math;
     using Extensions;
 
     public class CrackLineGroup : CrackLineBasic
@@ -25,7 +25,7 @@ namespace IceCracks.CracksGeneration.Models
 
         private List<CrackLine> cachedLines;
 
-        public override Vector2 Direction => Lines.Aggregate(Vector2.zero, (s, v) => s + v.Direction).normalized;
+        public override Vector2 direction => Lines.Aggregate(Vector2.zero, (s, v) => s + v.direction).normalized;
         public override float Length => Lines.Sum(c => c.Length);
 
         public static CrackLineGroup CreateGroupByForceDirectionStartPosition(float force, Vector2 direction,
@@ -33,7 +33,7 @@ namespace IceCracks.CracksGeneration.Models
         {
             CrackLineGroup result = new CrackLineGroup
             {
-                HasStateChangedSinceLastPointsGet = true,
+                hasStateChangedSinceLastPointsGet = true,
                 lines = new List<List<CrackLine>>(),
                 startPoint = startPosition,
                 initialDirection = direction,
@@ -70,15 +70,28 @@ namespace IceCracks.CracksGeneration.Models
                 }
                 else
                 {
-                    MathExtensions.SelectOneFromManyByPercents(lengths, out var result);
-                    if (result == -1)
+                    List<CrackLine> selectedLine;
+                    if (MathExtensions.SelectOneFromManyByPercents(lengths, out var result))
                     {
-                        Debug.LogError("Fuck!");
+                        selectedLine = lines[result];
                     }
-                    var selectedLine = lines[result];
+                    else
+                    {
+                        Debug.LogError("Error in selected start position to prolong!");
+                        if (lines.Count > 0)
+                            selectedLine = lines[^1];
+                        else
+                        {
+#if UNITY_EDITOR
+                            throw new ArithmeticException();
+#else
+                            return;
+#endif
+                        }
+                    }
                     var lastLine = selectedLine.Last();
                     selectedLine.AddRange(
-                        CrackLine.GenerateMultipleLinedCrackLines(force, lastLine.endPoint, lastLine.Direction));
+                        CrackLine.GenerateMultipleLinedCrackLines(force, lastLine.endPoint, lastLine.direction));
                 }
             }
             else
@@ -103,7 +116,7 @@ namespace IceCracks.CracksGeneration.Models
                         //TODO: here was nre, i fixed somehow, but not shure!
                         CrackLine lastLine = lines[0][^1];
                         lines[0].AddRange(
-                            CrackLine.GenerateMultipleLinedCrackLines(force, lastLine.endPoint, lastLine.Direction));
+                            CrackLine.GenerateMultipleLinedCrackLines(force, lastLine.endPoint, lastLine.direction));
                     }
                 }
             }
@@ -114,29 +127,33 @@ namespace IceCracks.CracksGeneration.Models
         private void CreateBranchFromSelectedLine(int lineId, float force)
         {
             var currentLine = lines[lineId];
-            //float maxLength = lines.Where(g => g != currentLine).Max(c => c.Sum(k => k.Length));
-            //float lengthSum = 0f;
+            /*
+            float maxLength = lines.Where(g => g != currentLine).Max(c => c.Sum(k => k.Length));
+            float lengthSum = 0f;
+            */
             int startPositionId = currentLine.Count - 2;
             if (startPositionId < 0)
                 startPositionId = currentLine.Count - 2;
-            // for (int i = 0; i < currentLine.Count; i++)
-            // {
-            //     if (lengthSum > maxLength)
-            //     {
-            //         startPositionId = i - 1;
-            //         break;
-            //     }
-            //
-            //     lengthSum += currentLine[i].GetLength();
-            // }
-            //
-            // if (startPositionId == -1)
-            // {
-            //     startPositionId = currentLine.Count - 2;
-            // }
+            /*
+            for (int i = 0; i < currentLine.Count; i++)
+            {
+                if (lengthSum > maxLength)
+                {
+                    startPositionId = i - 1;
+                    break;
+                }
+            
+                lengthSum += currentLine[i].GetLength();
+            }
+            
+            if (startPositionId == -1)
+            {
+                startPositionId = currentLine.Count - 2;
+            }
+            */
 
-            var direction = Vector2.Perpendicular(currentLine[startPositionId].Direction) * Random.Range(-.1f, .1f) +
-                            currentLine[startPositionId].Direction;
+            var direction =
+                MathExtensions.RandomVectorRotationInAngleRangeWithHole(currentLine[startPositionId].direction, 5f, 2f);
             direction.Normalize();
 
             lines.Add(new List<CrackLine>());
@@ -166,13 +183,13 @@ namespace IceCracks.CracksGeneration.Models
         {
             cachedLines?.Clear();
             cachedLines = null;
-            HasStateChangedSinceLastPointsGet = true;
+            hasStateChangedSinceLastPointsGet = true;
             base.NotifyInternalStateChanged();
         }
 
         public override IReadOnlyCollection<(Vector2Int, Vector2Int)> GetPoints()
         {
-            HasStateChangedSinceLastPointsGet = false;
+            hasStateChangedSinceLastPointsGet = false;
             return Lines.SelectMany(c => c.GetPoints()).ToList();
         }
 

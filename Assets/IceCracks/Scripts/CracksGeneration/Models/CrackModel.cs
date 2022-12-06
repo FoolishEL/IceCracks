@@ -24,7 +24,7 @@ namespace IceCracks.CracksGeneration.Models
                 return result;
             foreach (var c in cracks)
             {
-                if (c.HasStateChangedSinceLastPointsGet)
+                if (c.hasStateChangedSinceLastPointsGet)
                     result.AddRange(c.GetPoints());
             }
             return result;
