@@ -30,6 +30,15 @@ namespace IceCracks.CracksGeneration.Models
             return result;
         }
 
+        public IEnumerable<(Vector2Int, Vector2Int)> GetAllPoints()
+        {
+            List<(Vector2Int, Vector2Int)> result = new List<(Vector2Int, Vector2Int)>();
+            if (cracks is null || cracks.Count == 0)
+                return result;
+            cracks.ForEach(c=>result.AddRange(c.GetPoints()));
+            return result;
+        }
+
         public IEnumerable<CrackCore> GetCores()
         {
             try
@@ -45,22 +54,19 @@ namespace IceCracks.CracksGeneration.Models
         public void AddCracks(Vector2Int position, float force)
         {
             var corePositions = GetCores().ToList();
-            bool isCreated = false;
+            var isCreated = false;
             foreach (var item in corePositions)
             {
-                if (Vector2Int.Distance(item.position, position) < item.radius)
-                {
-                    cracks.AddRange(item.ProlongCrack(force));
-                    isCreated = true;
-                    break;
-                }
+                if (!(Vector2Int.Distance(item.position, position) < item.radius * 1.2f)) continue;
+                cracks.AddRange(item.ProlongCrack(force));
+                isCreated = true;
+                break;
             }
-            if (!isCreated)
-            {
-                CrackCore core = new CrackCore(position, CrackExtensions.TOKEN_DEFAULT_CORE_CIRCLE_RADIUS, out var generated, force);
-                cracks.Add(core);
-                cracks.AddRange(generated);
-            }
+
+            if (isCreated) return;
+            CrackCore core = new CrackCore(position, CrackExtensions.TOKEN_DEFAULT_CORE_CIRCLE_RADIUS, out var generated, force);
+            cracks.Add(core);
+            cracks.AddRange(generated);
         }
     }
 }

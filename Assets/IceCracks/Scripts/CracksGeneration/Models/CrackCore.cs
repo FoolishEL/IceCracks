@@ -82,9 +82,15 @@ namespace IceCracks.CracksGeneration.Models
 
         private void GeneratePoints()
         {
+            //TODO: feature for later
             CrackExtensions.GenerateValuesWithSum(360,
-                ((int)(radius / CrackExtensions.TOKEN_DEFAULT_CORE_SPLIT_RADIUS) *
-                 CrackExtensions.TOKEN_DEFAULT_SECTORS_COUNT), out var result);
+                /*((int)(radius / CrackExtensions.TOKEN_DEFAULT_CORE_SPLIT_RADIUS) *
+                 CrackExtensions.TOKEN_DEFAULT_MIN_SECTORS_COUNT
+                 )*/
+                Random.Range(CrackExtensions.TOKEN_DEFAULT_MIN_SECTORS_COUNT,
+                    CrackExtensions.TOKEN_DEFAULT_MAX_SECTORS_COUNT)
+                , out var result);
+            
             foreach (var p in result)
             {
                 CrackExtensions.SphericalToCartesian(radius, p, out var vector);

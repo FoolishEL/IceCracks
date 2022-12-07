@@ -1,16 +1,18 @@
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
+using static BMesh;
 
 public class SplitMeshController : MonoBehaviour
 {
     [SerializeField] private SimpleMeshView prefab;
     [SerializeField] private Vector2 size;
-    [SerializeField] private int resolution;
+    [SerializeField] private float resolution;
     
+    //Obsolete
+   /* 
     private List<Vector3> vertices;
     private List<Vector2> uvs;
     private List<int> triangles;
+    */
 
     private void Awake()
     {
@@ -20,9 +22,11 @@ public class SplitMeshController : MonoBehaviour
     private void GenerateInitialMesh()
     {
         var mView = Instantiate(prefab);
-        mView.SetMesh(CreateDefaultMesh(size, resolution));
+        mView.SetMesh(Create(size));
     }
-    
+    //Obsolete
+    /*
+    [Obsolete]
     private Mesh CreateDefaultMesh(Vector2 size, int resolution)
     {
         var mesh = new Mesh {
@@ -66,6 +70,21 @@ public class SplitMeshController : MonoBehaviour
         // mesh.RecalculateTangents();
         return mesh;
     }
+    */
+
+    private BMesh Create(Vector2 size)
+    {
+        BMesh f1 = BMeshUtilities.CreateQuadMesh(size, new Vector2(-1, -1f / 3f), new Vector2(1, -1));
+        BMesh f2 = BMeshUtilities.CreateQuadMesh(size, new Vector2(1f / 3f, 1f / 3f), new Vector2(1, -1f / 3f));
+        BMesh f3 = BMeshUtilities.CreateQuadMesh(size, new Vector2(-1, 1f / 3f), new Vector2(-1f/3f, -1f/3f));
+        BMesh f4 = BMeshUtilities.CreateQuadMesh(size, new Vector2(-1, 1f), new Vector2(1, 1f/3f));
+        BMeshOperators.Merge(f1, f2);
+        BMeshOperators.Merge(f1, f3);
+        BMeshOperators.Merge(f1, f4);
+        // Set the current mesh filter to use our generated mesh
+        return f1;
+    }
+    
 
     private void SplitMesh(SimpleMeshView simpleMeshView)
     {

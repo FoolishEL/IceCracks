@@ -14,6 +14,12 @@ public class SimpleMeshView : MonoBehaviour
         meshCollider.sharedMesh = mesh;
     }
 
+    public void SetMesh(BMesh mesh)
+    {
+        BMeshUnity.SetInMeshFilter(mesh, meshFilter);
+        meshCollider.sharedMesh = meshFilter.mesh;
+    }
+
     public Mesh GetMesh() => meshFilter.mesh;
 
 }
