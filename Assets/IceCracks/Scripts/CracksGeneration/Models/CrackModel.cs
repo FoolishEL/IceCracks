@@ -54,16 +54,16 @@ namespace IceCracks.CracksGeneration.Models
         public void AddCracks(Vector2Int position, float force)
         {
             var corePositions = GetCores().ToList();
-            var isCreated = false;
+            var isProlonged = false;
             foreach (var item in corePositions)
             {
                 if (!(Vector2Int.Distance(item.position, position) < item.radius * 1.2f)) continue;
                 cracks.AddRange(item.ProlongCrack(force));
-                isCreated = true;
+                isProlonged = true;
                 break;
             }
 
-            if (isCreated) return;
+            if (isProlonged) return;
             CrackCore core = new CrackCore(position, CrackExtensions.TOKEN_DEFAULT_CORE_CIRCLE_RADIUS, out var generated, force);
             cracks.Add(core);
             cracks.AddRange(generated);
