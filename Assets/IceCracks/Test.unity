@@ -154,6 +154,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   prefab: {fileID: 343216886321660919, guid: 9cd69d56276a44e079737633452de3ac, type: 3}
   size: {x: 10, y: 10}
+  spiltCount: 6
+  depth: 4
 --- !u!4 &727587737
 Transform:
   m_ObjectHideFlags: 0
@@ -190,7 +192,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &798824699
 RectTransform:
   m_ObjectHideFlags: 0
@@ -319,7 +321,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1605922277
 MonoBehaviour:
   m_ObjectHideFlags: 0

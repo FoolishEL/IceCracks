@@ -160,7 +160,8 @@ namespace IceCracks.Math
 
         public static Vector2 Rebase(Vector2 initialVector, Vector2 minInitial,Vector2 maxInitial,Vector2 minNew, Vector2 maxNew)
         {
-            return Vector2.down;
+            return new Vector2(Rebase(initialVector.x, minInitial.x, maxInitial.x, minNew.x, maxNew.x),
+                Rebase(initialVector.y, minInitial.y, maxInitial.y, minNew.y, maxNew.y));
         }
     }
 }

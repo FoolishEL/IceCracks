@@ -6,6 +6,11 @@ public class SplitMeshController : MonoBehaviour
 {
     [SerializeField] private IcePiece prefab;
     [SerializeField] private Vector2 size;
+    
+    [SerializeField]
+    private int spiltCount = 6;
+    [SerializeField]
+    private int depth = 4;
 
     private void Start() => GenerateInitialMesh();
 
@@ -16,6 +21,7 @@ public class SplitMeshController : MonoBehaviour
     }
     private HyperSpace Create(Vector2 size)
     {
-        return new HyperSpace(size, Vector2.one, -Vector2.one, 10, 4, 0);
+        return new HyperSpace(size, Vector2.one, -Vector2.one, spiltCount, depth, 0);
     }
+    
 }

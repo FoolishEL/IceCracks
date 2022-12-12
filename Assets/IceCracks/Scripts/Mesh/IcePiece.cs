@@ -28,9 +28,7 @@ namespace IceCracks.CracksGeneration.Models
 
         private async void CutOffPieces(Rectangle obj)
         {
-            float time = Time.time;
             await currentData.CutOut(obj);
-            Debug.LogError($"Data created in {Time.time -time} seconds");
             meshView.SetMesh(currentData.GetBMesh());
         }
     }

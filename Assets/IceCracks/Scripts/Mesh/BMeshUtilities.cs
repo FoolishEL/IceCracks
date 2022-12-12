@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using static BMesh;
@@ -41,7 +40,7 @@ public static class BMeshUtilities
         public Vector2 bottomLeftPoint { get; private set; }
 
         public Vector2 centerPoint { get; private set; }
-        private Vector2 deltaSize;
+        //private Vector2 deltaSize;
 
         public Rectangle(Vector2 topLeftPoint, Vector2 bottomRightPoint)
         {
@@ -52,16 +51,11 @@ public static class BMeshUtilities
 
             this.topLeftPoint = topLeftPoint;
             this.bottomRightPoint = bottomRightPoint;
-            deltaSize = new Vector2(Mathf.Abs(topLeftPoint.x - centerPoint.x),
-                Mathf.Abs(topLeftPoint.x - centerPoint.x));
+            // deltaSize = new Vector2(Mathf.Abs(topLeftPoint.x - centerPoint.x),
+            //     Mathf.Abs(topLeftPoint.x - centerPoint.x));
             centerPoint = (topLeftPoint + bottomRightPoint) / 2;
             topRightPoint = new Vector2(bottomRightPoint.x, topLeftPoint.y);
             bottomLeftPoint = new Vector2(topLeftPoint.x, bottomRightPoint.y);
-        }
-
-        public BMesh ToBMesh(Vector2 size)
-        {
-            return CreateQuadMesh(size, topLeftPoint, bottomRightPoint);
         }
 
         public bool IsPointInside(Vector2 point)
@@ -155,7 +149,6 @@ public static class BMeshUtilities
                 }
             }
             
-            
             /*
             foreach (var hspace in subSpaces)
             {
@@ -182,7 +175,10 @@ public static class BMeshUtilities
         public BMesh GetBMesh()
         {
             if (isEmpty)
+            {
                 return null;
+            }
+
             if (cachedBMesh != null)
                 return cachedBMesh;
             
@@ -201,21 +197,26 @@ public static class BMeshUtilities
                     {
                         var hspace = subSpaces[i, j];
                         if (hspace.isEmpty)
+                        {
                             continue;
+                        }
 
                         var mesh = hspace.GetBMesh();
                         if (mesh != null)
                             bMeshes.Add(mesh);
                     }
                 }
-                // foreach (var subSpace in subSpaces)
-                // {
-                //     if (subSpace.isEmpty)
-                //         continue;
-                //     var mesh = subSpace.GetBMesh();
-                //     if (mesh != null)
-                //         bMeshes.Add(mesh);
-                // }
+                
+                /*
+                foreach (var subSpace in subSpaces)
+                {
+                    if (subSpace.isEmpty)
+                        continue;
+                    var mesh = subSpace.GetBMesh();
+                    if (mesh != null)
+                        bMeshes.Add(mesh);
+                }
+                */
 
                 cachedBMesh = bMeshes[0].Copy();
                 if (bMeshes.Count > 1)
@@ -232,7 +233,7 @@ public static class BMeshUtilities
             }
             else
             {
-                cachedBMesh = isEmpty ? null : mainSquare.ToBMesh(size);
+                cachedBMesh = isEmpty ? null : CreateQuadMesh(size, mainSquare.topLeftPoint, mainSquare.bottomRightPoint);
             }
         }
 
