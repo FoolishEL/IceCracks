@@ -152,9 +152,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af7b67937786f4fcaa0ee5e51038b26b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prefab: {fileID: 5609841060034762124, guid: 9cd69d56276a44e079737633452de3ac, type: 3}
+  prefab: {fileID: 343216886321660919, guid: 9cd69d56276a44e079737633452de3ac, type: 3}
   size: {x: 10, y: 10}
-  resolution: 5
 --- !u!4 &727587737
 Transform:
   m_ObjectHideFlags: 0

@@ -10,11 +10,12 @@ GameObject:
   m_Component:
   - component: {fileID: 8517430460272851427}
   - component: {fileID: 4097879753015446500}
+  - component: {fileID: 2841805481994570136}
   - component: {fileID: 7743229968413863565}
   - component: {fileID: 5609841060034762124}
-  - component: {fileID: 2841805481994570136}
   - component: {fileID: 8260796031594523657}
   - component: {fileID: 5552171315109147360}
+  - component: {fileID: 343216886321660919}
   m_Layer: 0
   m_Name: MeshView
   m_TagString: Untagged
@@ -78,6 +79,20 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!64 &2841805481994570136
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7836398356445208428}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 0}
 --- !u!33 &7743229968413863565
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -100,20 +115,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   meshFilter: {fileID: 7743229968413863565}
   meshCollider: {fileID: 2841805481994570136}
---- !u!64 &2841805481994570136
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7836398356445208428}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 4
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 0}
 --- !u!114 &8260796031594523657
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -144,3 +145,18 @@ MonoBehaviour:
   color: {r: 0, g: 0.011129055, b: 0.2264151, a: 1}
   texture2D: {fileID: 2800000, guid: 78d9700918a2549a79eb25097c3c94c2, type: 3}
   meshRenderer: {fileID: 4097879753015446500}
+--- !u!114 &343216886321660919
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7836398356445208428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3fdee4456c8534e4f854027648f819d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  meshView: {fileID: 5609841060034762124}
+  meshCrackGenerator: {fileID: 8260796031594523657}
+  meshCrackVisualizer: {fileID: 5552171315109147360}

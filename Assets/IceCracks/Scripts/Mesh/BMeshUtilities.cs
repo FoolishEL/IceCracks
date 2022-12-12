@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 using static BMesh;
 
@@ -98,6 +101,7 @@ public static class BMeshUtilities
         private bool isEmpty;
         private bool isCutted;
         private HyperSpace[,] subSpaces;
+        private List<HyperSpace> listedSubSpaces;
 
         private BMesh cachedBMesh;
 
@@ -116,7 +120,7 @@ public static class BMeshUtilities
             mainSquare = new Rectangle(topLeftPoint, bottomRightPoint);
         }
 
-        public void CutOut(Rectangle rectangle)
+        public async Task CutOut(Rectangle rectangle)
         {
             if (isEmpty)
                 return;
@@ -126,6 +130,7 @@ public static class BMeshUtilities
             }
             if (currentDepth >= maxDepth || mainSquare.IsInsideIn(rectangle))
             {
+                cachedBMesh = null;
                 isEmpty = true;
                 return;
             }
@@ -134,17 +139,43 @@ public static class BMeshUtilities
             if (subSpaces is null)
                 GenerateSubSpaces();
             isCutted = true;
-            int emptynessCount = 0;
+            int emptinessCount = 0;
+            //await Task.WhenAll(listedSubSpaces.Select(c => c.CutOut(rectangle)));
+
+            #region unuptimized
+            
+            for (int i = 0; i < splitCount; i++)
+            {
+                for (int j = 0; j < splitCount; j++)
+                {
+                    var hspace = subSpaces[i, j];
+                    await hspace.CutOut(rectangle);
+                    if (hspace.isEmpty)
+                        emptinessCount++;
+                }
+            }
+            
+            
+            /*
             foreach (var hspace in subSpaces)
             {
-                hspace.CutOut(rectangle);
+                await Task.Yield();
+                await hspace.CutOut(rectangle);
                 if (hspace.isEmpty)
-                    emptynessCount++;
+                {
+                    emptinessCount++;
+                    Debug.LogError($"Cutted out {}");
+                }
             }
-
-            if (emptynessCount == splitCount * splitCount)
+            */
+            
+            #endregion
+            
+            //emptinessCount = listedSubSpaces.Count(c => c.isEmpty);
+            if (emptinessCount == splitCount * splitCount)
             {
                 isEmpty = true;
+                cachedBMesh = null;
             }
         }
 
@@ -161,19 +192,34 @@ public static class BMeshUtilities
 
         private void CacheBMesh()
         {
-            if (isCutted)
+            if (isCutted && !isEmpty)
             {
                 List<BMesh> bMeshes = new List<BMesh>();
-                foreach (var subSpace in subSpaces)
+                for (int i = 0; i < splitCount; i++)
                 {
-                    if (subSpace.isEmpty)
-                        continue;
-                    bMeshes.Add(subSpace.GetBMesh());
-                }
+                    for (int j = 0; j < splitCount; j++)
+                    {
+                        var hspace = subSpaces[i, j];
+                        if (hspace.isEmpty)
+                            continue;
 
+                        var mesh = hspace.GetBMesh();
+                        if (mesh != null)
+                            bMeshes.Add(mesh);
+                    }
+                }
+                // foreach (var subSpace in subSpaces)
+                // {
+                //     if (subSpace.isEmpty)
+                //         continue;
+                //     var mesh = subSpace.GetBMesh();
+                //     if (mesh != null)
+                //         bMeshes.Add(mesh);
+                // }
+
+                cachedBMesh = bMeshes[0].Copy();
                 if (bMeshes.Count > 1)
                 {
-                    cachedBMesh = bMeshes[0];
                     for (int i = 1; i < bMeshes.Count; i++)
                     {
                         BMeshOperators.Merge(cachedBMesh, bMeshes[i]);
@@ -181,18 +227,19 @@ public static class BMeshUtilities
                 }
                 else
                 {
-                    cachedBMesh = bMeshes[0];
+                    BMeshOperators.Merge(cachedBMesh, bMeshes[0]);
                 }
             }
             else
             {
-                cachedBMesh = mainSquare.ToBMesh(size);
+                cachedBMesh = isEmpty ? null : mainSquare.ToBMesh(size);
             }
         }
 
         private void GenerateSubSpaces()
         {
             subSpaces = new HyperSpace[splitCount, splitCount];
+            listedSubSpaces = new List<HyperSpace>();
             float xOffset = (bottomRight.x - topLeft.x) / splitCount;
             float yOffset = (bottomRight.y - topLeft.y) / splitCount;
             float currentX = 0f;
@@ -207,6 +254,7 @@ public static class BMeshUtilities
                         startTopLeft + Vector2.right * currentX + Vector2.up * currentY,
                         startBottomRight + Vector2.right * currentX + Vector2.up * currentY, splitCount, maxDepth,
                         currentDepth + 1);
+                    listedSubSpaces.Add(subSpaces[i, j]);
                     currentY += yOffset;
                 }
 

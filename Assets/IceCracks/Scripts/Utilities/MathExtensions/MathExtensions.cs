@@ -151,5 +151,16 @@ namespace IceCracks.Math
             v.y = sin * tx + cos * ty;
             return v;
         }
+
+        public static float Rebase(float initialValue, float minInitial, float maxInitial, float minNew, float maxNew)
+        {
+            float percentage = (initialValue - minInitial) / (maxInitial - minInitial);
+            return Mathf.Lerp(minNew, maxNew, percentage);
+        }
+
+        public static Vector2 Rebase(Vector2 initialVector, Vector2 minInitial,Vector2 maxInitial,Vector2 minNew, Vector2 maxNew)
+        {
+            return Vector2.down;
+        }
     }
 }

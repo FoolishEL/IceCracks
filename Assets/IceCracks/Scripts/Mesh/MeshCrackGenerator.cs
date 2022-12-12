@@ -13,6 +13,7 @@ public class MeshCrackGenerator : MonoBehaviour
     private bool isInitialized;
 
     private CrackModel model;
+    public CrackModel Model => model;
 
     private void Start()
     {
@@ -42,24 +43,25 @@ public class MeshCrackGenerator : MonoBehaviour
             var position = hit.point;
             if (bounds.Contains(position))
             {
-                var pos = GetPressPosition(hit.point);
-                model.AddCracks(pos, CrackExtensions.TOKEN_DEBUG_INITIAL_CRACK_FORCE);
-                crackVisualizer.DrawCracks(model.GetPoints(), pos);
-                //FindAllClosedLoops(model.GetAllPoints());
+                var relativePosition = GetRelativePositionOnMesh(hit.point);
+                model.AddCracks(relativePosition, CrackExtensions.TOKEN_DEBUG_INITIAL_CRACK_FORCE);
+                crackVisualizer.DrawCracks(model.GetPoints(), GetPressPosition(relativePosition));
             }
         }
     }
 
-    private Vector2Int GetPressPosition(Vector3 initialPosition)
+    private Vector2Int GetPressPosition(Vector2 relativePos)
     {
         var textureSize = crackVisualizer.GetTextureSize();
-        var boundSize = new Vector2(bounds.size.x, bounds.size.z);
-        var center = textureSize / 2;
-        var pos = bounds.center - initialPosition;
-        pos.x *= -textureSize.x / boundSize.x;
-        pos.z *= textureSize.y / boundSize.y;
-        center += new Vector2Int((int)pos.x, (int)pos.z);
-        return center;
+        relativePos.x *= textureSize.x;
+        relativePos.y *= textureSize.y;
+        return new Vector2Int((int)relativePos.x, textureSize.y - (int)relativePos.y);
+    }
+
+    private Vector2 GetRelativePositionOnMesh(Vector3 initialPosition)
+    {
+        return new Vector2((initialPosition.x - bounds.min.x) / (bounds.max.x - bounds.min.x),
+            (initialPosition.z - bounds.min.z) / (bounds.max.z - bounds.min.z));
     }
 
     private void FindAllClosedLoops(IEnumerable<(Vector2Int, Vector2Int)> lines)
@@ -108,8 +110,6 @@ public class MeshCrackGenerator : MonoBehaviour
                 for (int k = 0; k < V.Count; k++)
                     color[k] = 1;
                 List<int> cycle = new List<int>();
-                //поскольку в C# нумерация элементов начинается с нуля, то для
-                //удобочитаемости результатов поиска в список добавляем номер i + 1
                 cycle.Add(i + 1);
                 DFScycle(i, i, E, color, -1, cycle);
             }
@@ -117,7 +117,6 @@ public class MeshCrackGenerator : MonoBehaviour
 
         private void DFScycle(int u, int endV, List<Edge> E, int[] color, int unavailableEdge, List<int> cycle)
         {
-            //если u == endV, то эту вершину перекрашивать не нужно, иначе мы в нее не вернемся, а вернуться необходимо
             if (u != endV)
                 color[u] = 2;
             else if (cycle.Count >= 2)
@@ -125,10 +124,10 @@ public class MeshCrackGenerator : MonoBehaviour
                 cycle.Reverse();
                 string s = cycle[0].ToString();
                 for (int i = 1; i < cycle.Count; i++)
-                    s += "-" + cycle[i].ToString();
-                bool flag = false; //есть ли палиндром для этого цикла графа в List<string> catalogCycles?
+                    s += "-" + cycle[i];
+                bool flag = false; 
                 for (int i = 0; i < catalogCycles.Count; i++)
-                    if (catalogCycles[i].ToString() == s)
+                    if (catalogCycles[i] == s)
                     {
                         flag = true;
                         break;
@@ -139,7 +138,7 @@ public class MeshCrackGenerator : MonoBehaviour
                     cycle.Reverse();
                     s = cycle[0].ToString();
                     for (int i = 1; i < cycle.Count; i++)
-                        s += "-" + cycle[i].ToString();
+                        s += "-" + cycle[i];
                     catalogCycles.Add(s);
                 }
 

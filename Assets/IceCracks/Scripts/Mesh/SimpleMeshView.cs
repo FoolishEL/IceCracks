@@ -7,15 +7,11 @@ public class SimpleMeshView : MonoBehaviour
     [SerializeField] private MeshCollider meshCollider;
 
     private void Reset() => meshFilter = GetComponent<MeshFilter>();
-
-    public void SetMesh(Mesh mesh)
-    {
-        meshFilter.mesh = mesh;
-        meshCollider.sharedMesh = mesh;
-    }
+    
 
     public void SetMesh(BMesh mesh)
     {
+        meshFilter.mesh = null;
         BMeshUnity.SetInMeshFilter(mesh, meshFilter);
         meshCollider.sharedMesh = meshFilter.mesh;
     }

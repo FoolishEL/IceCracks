@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using IceCracks.Math;
 using UnityEngine;
+using static BMeshUtilities;
 
 namespace IceCracks.CracksGeneration.Models
 {
@@ -8,10 +11,11 @@ namespace IceCracks.CracksGeneration.Models
 
     public class CrackModel
     {
-        private Vector2 sizeOfTexture;
+        private Vector2Int sizeOfTexture;
         private List<CrackArea> cracks;
+        public event Action<Rectangle> OnNewCoreCreated = delegate { };
 
-        public CrackModel(Vector2 sizeOfTexture)
+        public CrackModel(Vector2Int sizeOfTexture)
         {
             this.sizeOfTexture = sizeOfTexture;
             cracks = new List<CrackArea>();
@@ -51,8 +55,10 @@ namespace IceCracks.CracksGeneration.Models
             }
         }
     
-        public void AddCracks(Vector2Int position, float force)
+        public void AddCracks(Vector2 relativePosition, float force)
         {
+            var position = new Vector2Int((int)(relativePosition.x * sizeOfTexture.x),
+                sizeOfTexture.y - (int)(relativePosition.y * sizeOfTexture.y));
             var corePositions = GetCores().ToList();
             var isProlonged = false;
             foreach (var item in corePositions)
@@ -65,6 +71,13 @@ namespace IceCracks.CracksGeneration.Models
 
             if (isProlonged) return;
             CrackCore core = new CrackCore(position, CrackExtensions.TOKEN_DEFAULT_CORE_CIRCLE_RADIUS, out var generated, force);
+            Vector2 tlOffset = (Vector2.left + Vector2.up).normalized * (core.radius / (sizeOfTexture.magnitude * 2));
+            Vector2 brOffset = (Vector2.right + Vector2.down).normalized *
+                               (core.radius / (sizeOfTexture.magnitude * 2));
+            Vector2 newPosition = new Vector2(MathExtensions.Rebase(relativePosition.x, 0, 1, -1, 1),
+                MathExtensions.Rebase(relativePosition.y, 0, 1, -1, 1));
+            Rectangle rect = new Rectangle(newPosition + tlOffset, newPosition + brOffset);
+            OnNewCoreCreated.Invoke(rect);
             cracks.Add(core);
             cracks.AddRange(generated);
         }
