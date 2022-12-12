@@ -21,7 +21,8 @@ public class SplitMeshController : MonoBehaviour
     }
     private HyperSpace Create(Vector2 size)
     {
-        return new HyperSpace(size, Vector2.one, -Vector2.one, spiltCount, depth, 0);
+        //TODO: what is 2 means? parametrize this! 
+        return new HyperSpace(size, Vector2.zero, Vector2.one*2 , spiltCount, depth, 0);
     }
     
 }

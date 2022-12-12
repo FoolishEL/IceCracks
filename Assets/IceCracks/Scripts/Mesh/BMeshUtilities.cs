@@ -6,16 +6,16 @@ using static BMesh;
 
 public static class BMeshUtilities
 {
-    public static BMesh CreateQuadMesh(Vector2 size, Vector2 topLeftPoint, Vector2 bottomRightPoint)
+    public static BMesh CreateQuadMesh(Vector2 size, Vector2 topRightPoint, Vector2 bottomLeftPoint)
     {
         BMesh mesh = new BMesh();
         var uv = mesh.AddVertexAttribute("uv", BMesh.AttributeBaseType.Float, 2);
 
         List<Vertex> vertices = new List<Vertex>();
-        vertices.Add(AddVertexToMesh(bottomRightPoint.x, bottomRightPoint.y, mesh, size));
-        vertices.Add(AddVertexToMesh(bottomRightPoint.x, topLeftPoint.y, mesh, size));
-        vertices.Add(AddVertexToMesh(topLeftPoint.x, topLeftPoint.y, mesh, size));
-        vertices.Add(AddVertexToMesh(topLeftPoint.x, bottomRightPoint.y, mesh, size));
+        vertices.Add(AddVertexToMesh(topRightPoint.x, bottomLeftPoint.y, mesh, size));
+        vertices.Add(AddVertexToMesh(topRightPoint.x, topRightPoint.y, mesh, size));
+        vertices.Add(AddVertexToMesh(bottomLeftPoint.x, topRightPoint.y, mesh, size));
+        vertices.Add(AddVertexToMesh(bottomLeftPoint.x, bottomLeftPoint.y, mesh, size));
         mesh.AddFace(vertices.ToArray());
         return mesh;
     }
@@ -31,78 +31,22 @@ public static class BMeshUtilities
         return vert;
     }
 
-    public class Rectangle
-    {
-        public Vector2 topLeftPoint { get; private set; }
-        public Vector2 bottomRightPoint { get; private set; }
-        
-        public Vector2 topRightPoint { get; private set; }
-        public Vector2 bottomLeftPoint { get; private set; }
-
-        public Vector2 centerPoint { get; private set; }
-        //private Vector2 deltaSize;
-
-        public Rectangle(Vector2 topLeftPoint, Vector2 bottomRightPoint)
-        {
-            if (topLeftPoint.x > bottomRightPoint.x)
-                (bottomRightPoint.x, topLeftPoint.x) = (topLeftPoint.x, bottomRightPoint.x);
-            if (bottomRightPoint.y > topLeftPoint.y)
-                (topLeftPoint.y, bottomRightPoint.y) = (bottomRightPoint.y, topLeftPoint.y);
-
-            this.topLeftPoint = topLeftPoint;
-            this.bottomRightPoint = bottomRightPoint;
-            // deltaSize = new Vector2(Mathf.Abs(topLeftPoint.x - centerPoint.x),
-            //     Mathf.Abs(topLeftPoint.x - centerPoint.x));
-            centerPoint = (topLeftPoint + bottomRightPoint) / 2;
-            topRightPoint = new Vector2(bottomRightPoint.x, topLeftPoint.y);
-            bottomLeftPoint = new Vector2(topLeftPoint.x, bottomRightPoint.y);
-        }
-
-        public bool IsPointInside(Vector2 point)
-        {
-            return point.x <= bottomRightPoint.x && point.x >= topLeftPoint.x && 
-                   point.y >= bottomRightPoint.y && point.y <= topLeftPoint.y;
-        }
-
-        public bool IsIntersectedWith(Rectangle another)
-        {
-            if (Vector2.Distance(centerPoint, another.centerPoint) > Vector2.Distance(centerPoint, topLeftPoint) +
-                Vector2.Distance(another.centerPoint, another.topLeftPoint))
-                return false;
-            bool isCoreInside = IsPointInside(another.topLeftPoint) || IsPointInside(another.bottomRightPoint) ||
-                                IsPointInside(another.topRightPoint) || IsPointInside(another.bottomLeftPoint) ||
-
-                                another.IsPointInside(topLeftPoint) || another.IsPointInside(bottomRightPoint) ||
-                                another.IsPointInside(topRightPoint) || another.IsPointInside(bottomRightPoint);
-            return isCoreInside;
-        }
-
-        public bool IsInsideIn(Rectangle other)
-        {
-            return other.IsPointInside(topLeftPoint)
-                   && other.IsPointInside(bottomRightPoint);
-        }
-    }
-
     public class HyperSpace
     {
-        private Rectangle mainSquare;
-        private Vector2 size;
-        private int splitCount;
-        private int maxDepth;
-        private int currentDepth;
+        private Bounds mainSquare;
+        private readonly Vector2 size;
+        private readonly int splitCount;
+        private readonly int maxDepth;
+        private readonly int currentDepth;
 
         private bool isEmpty;
-        private bool isCutted;
+        private bool isCut;
         private HyperSpace[,] subSpaces;
         private List<HyperSpace> listedSubSpaces;
 
         private BMesh cachedBMesh;
 
-        private Vector2 topLeft => mainSquare.topLeftPoint;
-        private Vector2 bottomRight => mainSquare.bottomRightPoint;
-
-        public HyperSpace(Vector2 size, Vector2 topLeftPoint, Vector2 bottomRightPoint, int splitCount, int maxDepth,
+        public HyperSpace(Vector2 size, Vector2 boundsCenter, Vector2 boundsSize, int splitCount, int maxDepth,
             int currentDepth)
         {
             this.size = size;
@@ -110,19 +54,26 @@ public static class BMeshUtilities
             this.maxDepth = maxDepth;
             this.currentDepth = currentDepth;
             isEmpty = false;
-            isCutted = false;
-            mainSquare = new Rectangle(topLeftPoint, bottomRightPoint);
+            isCut = false;
+            //mainSquare = new Rectangle(topLeftPoint, bottomRightPoint);
+            mainSquare = new Bounds
+            {
+                center = boundsCenter,
+                size = boundsSize
+            };
         }
 
-        public async Task CutOut(Rectangle rectangle)
+        public async Task CutOut(Bounds rectangle)
         {
             if (isEmpty)
                 return;
-            if (!mainSquare.IsIntersectedWith(rectangle))
+            if (!mainSquare.Intersects(rectangle))
             {
                 return;
             }
-            if (currentDepth >= maxDepth || mainSquare.IsInsideIn(rectangle))
+
+            if (currentDepth >= maxDepth ||
+                (rectangle.Contains(mainSquare.max) && rectangle.Contains(mainSquare.min)))
             {
                 cachedBMesh = null;
                 isEmpty = true;
@@ -132,7 +83,7 @@ public static class BMeshUtilities
             cachedBMesh = null;
             if (subSpaces is null)
                 GenerateSubSpaces();
-            isCutted = true;
+            isCut = true;
             int emptinessCount = 0;
             //await Task.WhenAll(listedSubSpaces.Select(c => c.CutOut(rectangle)));
 
@@ -188,7 +139,7 @@ public static class BMeshUtilities
 
         private void CacheBMesh()
         {
-            if (isCutted && !isEmpty)
+            if (isCut && !isEmpty)
             {
                 List<BMesh> bMeshes = new List<BMesh>();
                 for (int i = 0; i < splitCount; i++)
@@ -233,7 +184,7 @@ public static class BMeshUtilities
             }
             else
             {
-                cachedBMesh = isEmpty ? null : CreateQuadMesh(size, mainSquare.topLeftPoint, mainSquare.bottomRightPoint);
+                cachedBMesh = isEmpty ? null : CreateQuadMesh(size, mainSquare.max, mainSquare.min);
             }
         }
 
@@ -241,26 +192,26 @@ public static class BMeshUtilities
         {
             subSpaces = new HyperSpace[splitCount, splitCount];
             listedSubSpaces = new List<HyperSpace>();
-            float xOffset = (bottomRight.x - topLeft.x) / splitCount;
-            float yOffset = (bottomRight.y - topLeft.y) / splitCount;
+            Vector2 boundsSize = mainSquare.size / splitCount;
             float currentX = 0f;
             float currentY = 0f;
-            Vector2 startTopLeft = new Vector2(topLeft.x, topLeft.y);
-            Vector2 startBottomRight = new Vector2(topLeft.x + xOffset, topLeft.y + yOffset);
+            Vector2 startTopLeft = (Vector2)mainSquare.min + boundsSize / 2;
             for (int i = 0; i < splitCount; i++)
             {
                 for (int j = 0; j < splitCount; j++)
                 {
                     subSpaces[i, j] = new HyperSpace(size,
                         startTopLeft + Vector2.right * currentX + Vector2.up * currentY,
-                        startBottomRight + Vector2.right * currentX + Vector2.up * currentY, splitCount, maxDepth,
+                        boundsSize,
+                        splitCount,
+                        maxDepth,
                         currentDepth + 1);
                     listedSubSpaces.Add(subSpaces[i, j]);
-                    currentY += yOffset;
+                    currentY += boundsSize.y;
                 }
 
                 currentY = 0f;
-                currentX += xOffset;
+                currentX += boundsSize.x;
             }
         }
     }

@@ -13,7 +13,7 @@ namespace IceCracks.CracksGeneration.Models
     {
         private Vector2Int sizeOfTexture;
         private List<CrackArea> cracks;
-        public event Action<Rectangle> OnNewCoreCreated = delegate { };
+        public event Action<Bounds> OnNewCoreCreated = delegate { };
 
         public CrackModel(Vector2Int sizeOfTexture)
         {
@@ -76,7 +76,7 @@ namespace IceCracks.CracksGeneration.Models
                                (core.radius / (sizeOfTexture.magnitude * 2));
             Vector2 newPosition = new Vector2(MathExtensions.Rebase(relativePosition.x, 0, 1, -1, 1),
                 MathExtensions.Rebase(relativePosition.y, 0, 1, -1, 1));
-            Rectangle rect = new Rectangle(newPosition + tlOffset, newPosition + brOffset);
+            Bounds rect = new Bounds(newPosition, Vector2.one * (core.radius / (sizeOfTexture.magnitude * 2)));
             OnNewCoreCreated.Invoke(rect);
             cracks.Add(core);
             cracks.AddRange(generated);

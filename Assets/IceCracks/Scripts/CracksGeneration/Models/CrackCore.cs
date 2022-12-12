@@ -99,7 +99,7 @@ namespace IceCracks.CracksGeneration.Models
                 exitCrackPositions.Add(new Vector2Int(Mathf.FloorToInt(vector.x), Mathf.FloorToInt(vector.y)));
             }
 
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
             //bounds.
             crackedLines.AddRange(CrackExtensions.SplitCoreLines(exitCrackPositions, position));
         }

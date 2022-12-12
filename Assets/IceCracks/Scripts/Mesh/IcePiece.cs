@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using static BMeshUtilities;
 
@@ -26,7 +25,7 @@ namespace IceCracks.CracksGeneration.Models
             meshCrackGenerator.Model.OnNewCoreCreated -= CutOffPieces;
         }
 
-        private async void CutOffPieces(Rectangle obj)
+        private async void CutOffPieces(Bounds obj)
         {
             await currentData.CutOut(obj);
             meshView.SetMesh(currentData.GetBMesh());

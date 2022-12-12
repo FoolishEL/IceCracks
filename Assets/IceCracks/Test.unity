@@ -154,8 +154,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   prefab: {fileID: 343216886321660919, guid: 9cd69d56276a44e079737633452de3ac, type: 3}
   size: {x: 10, y: 10}
-  spiltCount: 6
-  depth: 4
+  spiltCount: 10
+  depth: 2
 --- !u!4 &727587737
 Transform:
   m_ObjectHideFlags: 0
