@@ -1,19 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using IceCracks.Math;
+using IceCracks.Utilities;
 using UnityEngine;
-using static BMeshUtilities;
 
 namespace IceCracks.CracksGeneration.Models
 {
+    using Math;
     using Extensions;
 
     public class CrackModel
     {
         private Vector2Int sizeOfTexture;
         private List<CrackArea> cracks;
-        public event Action<Bounds> OnNewCoreCreated = delegate { };
+        public event Action<BMesh,Bounds> OnNewCoreCreated = delegate { };
 
         public CrackModel(Vector2Int sizeOfTexture)
         {
@@ -55,7 +55,7 @@ namespace IceCracks.CracksGeneration.Models
             }
         }
     
-        public void AddCracks(Vector2 relativePosition, float force)
+        public bool AddCracks(Vector2 relativePosition, float force)
         {
             var position = new Vector2Int((int)(relativePosition.x * sizeOfTexture.x),
                 sizeOfTexture.y - (int)(relativePosition.y * sizeOfTexture.y));
@@ -63,23 +63,43 @@ namespace IceCracks.CracksGeneration.Models
             var isProlonged = false;
             foreach (var item in corePositions)
             {
-                if (!(Vector2Int.Distance(item.position, position) < item.radius * 1.2f)) continue;
+                if (!(Vector2Int.Distance(item.position, position) < item.radius*1.4f ))
+                    continue;
                 cracks.AddRange(item.ProlongCrack(force));
                 isProlonged = true;
                 break;
             }
 
-            if (isProlonged) return;
+            if (isProlonged)
+                return true;
             CrackCore core = new CrackCore(position, CrackExtensions.TOKEN_DEFAULT_CORE_CIRCLE_RADIUS, out var generated, force);
-            Vector2 tlOffset = (Vector2.left + Vector2.up).normalized * (core.radius / (sizeOfTexture.magnitude * 2));
-            Vector2 brOffset = (Vector2.right + Vector2.down).normalized *
-                               (core.radius / (sizeOfTexture.magnitude * 2));
+            
             Vector2 newPosition = new Vector2(MathExtensions.Rebase(relativePosition.x, 0, 1, -1, 1),
                 MathExtensions.Rebase(relativePosition.y, 0, 1, -1, 1));
-            Bounds rect = new Bounds(newPosition, Vector2.one * (core.radius / (sizeOfTexture.magnitude * 2)));
-            OnNewCoreCreated.Invoke(rect);
+            var res = CrackExtensions.SortVertices(core.ExitCrackPositions.Select(c => (Vector2)c), position);
+            
+            Bounds rect = new Bounds
+            {
+                center = newPosition
+            };
+            
+            Vector2 center = Vector2.zero;
+            
+            for (int i = 0; i < res.Count; i++)
+            {
+                var item = res[i];
+                item.y = sizeOfTexture.y - item.y;
+                res[i] = MathExtensions.Rebase(item, Vector2.zero, sizeOfTexture, -Vector2.one, Vector2.one);
+                center += res[i];
+                var newExitPoint = MathExtensions.Rebase(item, Vector2.zero, sizeOfTexture, -Vector2.one, Vector2.one);
+                rect.Encapsulate(newExitPoint);
+            }
+            center /= res.Count;
+            var bMesh = BMeshUtilities.CreateMeshFromPoints(res, center, Vector2.one * 10f);
+            OnNewCoreCreated.Invoke(bMesh,rect);
             cracks.Add(core);
             cracks.AddRange(generated);
+            return false;
         }
     }
 }

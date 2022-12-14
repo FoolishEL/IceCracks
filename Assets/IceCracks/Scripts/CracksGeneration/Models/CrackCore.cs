@@ -18,7 +18,7 @@ namespace IceCracks.CracksGeneration.Models
         public IReadOnlyList<CrackLineGroup> ConnectedLines => connectedLines;
         private readonly List<(Vector2Int, Vector2Int)> crackedLines;
         private readonly List<Vector2Int> exitCrackPositions;
-        private Bounds bounds;
+        public List<Vector2Int> ExitCrackPositions => exitCrackPositions;
 
         public CrackCore(Vector2Int position, float radius, out IReadOnlyList<CrackLineGroup> generated,
             float force = 10f)
@@ -98,9 +98,7 @@ namespace IceCracks.CracksGeneration.Models
                 vector += position;
                 exitCrackPositions.Add(new Vector2Int(Mathf.FloorToInt(vector.x), Mathf.FloorToInt(vector.y)));
             }
-
-            //throw new NotImplementedException();
-            //bounds.
+            
             crackedLines.AddRange(CrackExtensions.SplitCoreLines(exitCrackPositions, position));
         }
 

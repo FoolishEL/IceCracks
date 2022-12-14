@@ -1,21 +1,26 @@
 using UnityEngine;
 
-[RequireComponent(typeof(MeshRenderer),typeof(MeshFilter))]
-public class SimpleMeshView : MonoBehaviour
+namespace IceCracks.Views
 {
-    [SerializeField] private MeshFilter meshFilter;
-    [SerializeField] private MeshCollider meshCollider;
-
-    private void Reset() => meshFilter = GetComponent<MeshFilter>();
-    
-
-    public void SetMesh(BMesh mesh)
+    public class SimpleMeshView : MonoBehaviour
     {
-        meshFilter.mesh = null;
-        BMeshUnity.SetInMeshFilter(mesh, meshFilter);
-        meshCollider.sharedMesh = meshFilter.mesh;
+        [SerializeField] protected MeshFilter meshFilter;
+        [SerializeField] protected MeshRenderer meshRenderer;
+
+        protected virtual void Reset() => meshFilter = GetComponent<MeshFilter>();
+
+
+        public virtual void SetMesh(BMesh mesh)
+        {
+            meshFilter.mesh = null;
+            BMeshUnity.SetInMeshFilter(mesh, meshFilter);
+        }
+
+        public MeshRenderer GetMeshRenderer() => meshRenderer;
+
+        public void CacheTexture(Texture2D newTexture)
+        {
+            meshRenderer.materials[0].mainTexture = newTexture;
+        }
     }
-
-    public Mesh GetMesh() => meshFilter.mesh;
-
 }

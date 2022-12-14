@@ -163,5 +163,12 @@ namespace IceCracks.Math
             return new Vector2(Rebase(initialVector.x, minInitial.x, maxInitial.x, minNew.x, maxNew.x),
                 Rebase(initialVector.y, minInitial.y, maxInitial.y, minNew.y, maxNew.y));
         }
+        
+        public static Vector3 Rebase(Vector3 initialVector, Vector3 minInitial,Vector3 maxInitial,Vector3 minNew, Vector3 maxNew)
+        {
+            return new Vector3(Rebase(initialVector.x, minInitial.x, maxInitial.x, minNew.x, maxNew.x),
+                Rebase(initialVector.y, minInitial.y, maxInitial.y, minNew.y, maxNew.y),
+                Rebase(initialVector.z, minInitial.z, maxInitial.z, minNew.z, maxNew.z));
+        }
     }
 }
