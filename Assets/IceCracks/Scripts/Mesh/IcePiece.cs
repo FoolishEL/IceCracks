@@ -21,6 +21,7 @@ namespace IceCracks.CracksGeneration.Models
         private BMesh cachedBMesh;
         private Vector2 size;
         private List<HyperSpace> onEdge;
+        public bool isNewMesh { get; private set; } = true;
 
         public void Stop()
         {
@@ -55,6 +56,7 @@ namespace IceCracks.CracksGeneration.Models
 
         private async void CutOffPieces(BMesh bMesh,Bounds obj)
         {
+            isNewMesh = false;
             cachedBMesh = bMesh;
             isGenerated = false;
             meshCrackGenerator.SetBusyStatus(this);

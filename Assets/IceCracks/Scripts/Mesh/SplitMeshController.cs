@@ -21,11 +21,13 @@ namespace IceCracks.CracksGeneration
 
         public static event Action OnRestartCommandRecive = delegate { };
 
-        [ContextMenu(nameof(KKk))]
-        private void KKk()
+#if UNITY_EDITOR
+        [ContextMenu(nameof(RestartScene))]
+        private void RestartScene()
         {
             SceneManager.LoadScene(0);
         }
+#endif
         private void Start() => GenerateInitialMesh();
 
         private void GenerateInitialMesh()
@@ -41,7 +43,16 @@ namespace IceCracks.CracksGeneration
             //TODO: what is 2 means? parametrize this! 
             splitAmounts = new List<int>();
             splitAmounts.AddRange(splitCountByDepth);
-
+            
+            var k = new GridOfPoints(300);
+            var hole = k.MakeHole(Vector2.zero, .1f);
+            GameObject go = new GameObject();
+            go.AddComponent<MeshFilter>().sharedMesh = hole.ToUnityMesh();
+            go.AddComponent<MeshCollider>();
+            go = new GameObject();
+            go.AddComponent<MeshFilter>().sharedMesh = k.GetBase().ToUnityMesh();
+            go.AddComponent<MeshCollider>();
+            
             return new HyperSpace(size, Vector2.zero, Vector2.one * 2, splitCountByDepth.Count, 0);
         }
 
@@ -52,6 +63,8 @@ namespace IceCracks.CracksGeneration
         [ContextMenu(nameof(Restart))]
         public async void Restart()
         {
+            if(lastPiece.isNewMesh)
+                return;
             isAppeared = false;
             MeshCrackVisualizer.OnAppear += OnMeshAppear;
             lastPiece.Stop();

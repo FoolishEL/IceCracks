@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using IceCracks.Math;
+using Jobberwocky.GeometryAlgorithms.Source.API;
+using Jobberwocky.GeometryAlgorithms.Source.Core;
+using Jobberwocky.GeometryAlgorithms.Source.Parameters;
 using UnityEngine;
-using static BMesh;
 
 namespace IceCracks.Utilities
 {
@@ -16,7 +19,7 @@ namespace IceCracks.Utilities
             BMesh mesh = new BMesh();
             var uv = mesh.AddVertexAttribute("uv", BMesh.AttributeBaseType.Float, 2);
 
-            List<Vertex> vertices = new List<Vertex>();
+            List<BMesh.Vertex> vertices = new List<BMesh.Vertex>();
             vertices.Add(AddVertexToMesh(topRightPoint.x, bottomLeftPoint.y, mesh, size));
             vertices.Add(AddVertexToMesh(topRightPoint.x, topRightPoint.y, mesh, size));
             vertices.Add(AddVertexToMesh(bottomLeftPoint.x, topRightPoint.y, mesh, size));
@@ -29,7 +32,7 @@ namespace IceCracks.Utilities
         {
             BMesh mesh = new BMesh();
             var uv = mesh.AddVertexAttribute("uv", BMesh.AttributeBaseType.Float, 2);
-            List<Vertex> vertices = new List<Vertex>();
+            List<BMesh.Vertex> vertices = new List<BMesh.Vertex>();
             vertices.Add(AddVertexToMesh(center.x, center.y, mesh, size));
             vertices.Add(AddVertexToMesh(points[0].x, points[0].y, mesh, size));
             vertices.Add(AddVertexToMesh(points[^1].x, points[^1].y, mesh, size));
@@ -39,7 +42,7 @@ namespace IceCracks.Utilities
             {
                 BMesh meshTemp = new BMesh();
                 meshTemp.AddVertexAttribute("uv", BMesh.AttributeBaseType.Float, 2);
-                List<Vertex> verticesTemp = new List<Vertex>();
+                List<BMesh.Vertex> verticesTemp = new List<BMesh.Vertex>();
                 verticesTemp.Add(AddVertexToMesh(center.x, center.y, meshTemp, size));
                 verticesTemp.Add(AddVertexToMesh(points[i+1].x, points[i+1].y, meshTemp, size));
                 verticesTemp.Add(AddVertexToMesh(points[i].x, points[i].y, meshTemp, size));
@@ -49,7 +52,7 @@ namespace IceCracks.Utilities
             return mesh;
         }
 
-        private static Vertex AddVertexToMesh(float x, float y, BMesh bMesh, Vector2 size)
+        private static BMesh.Vertex AddVertexToMesh(float x, float y, BMesh bMesh, Vector2 size)
         {
             float initialX = (x + 1f) / 2f;
             float initialY = (1f - y) / 2f;
@@ -441,6 +444,75 @@ namespace IceCracks.Utilities
                         }
                     }
                 }
+            }
+        }
+        
+        public class GridOfPoints
+        {
+            private Vector2 [,] points;
+            private List<Vector3> listedPoints;
+
+            private float gridSize;
+            private List<Vector3[]> Holes;
+
+            public GridOfPoints(int miniGridCount)
+            {
+                Holes = new List<Vector3[]>();
+                listedPoints = new List<Vector3>();
+                gridSize = 2f / miniGridCount;
+                points = new Vector2[miniGridCount, miniGridCount];
+                Vector2 startPoint = Vector2.one * -1;
+                float currentX = 0f;
+                float currentY = 0f;
+                for (int i = 0; i < miniGridCount; i++)
+                {
+                    for (int j = 0; j < miniGridCount; j++)
+                    {
+                        points[i, j] = startPoint + Vector2.right * currentX + Vector2.up * currentY;
+                        listedPoints.Add(points[i, j]);
+                        currentY += gridSize;
+                    }
+
+                    currentY = 0f;
+                    currentX += gridSize;
+                }
+            }
+
+            public Geometry MakeHole(Vector2 position,float radius)
+            {
+                var listPoints = new List<Vector2>();
+                foreach (var point in points)
+                {
+                    if (Vector2.Distance(point, position) < radius)
+                    {
+                        listPoints.Add(point);
+                        listedPoints.Remove(point);
+                    }
+                }
+                var parameters = new Triangulation2DParameters();
+                parameters.Points = listPoints.Select(c=>(Vector3)c).ToArray();
+                Holes.Add(parameters.Points);
+                //parameters.Boundary = shape.Boundary;
+                //parameters.Holes = shape.Holes;
+                parameters.Side = Side.Back;
+                parameters.Delaunay = true;
+
+                var triangulationAPI = new TriangulationAPI();
+                var result = triangulationAPI.Triangulate2DRaw(parameters);
+                return result;
+                var mesh = triangulationAPI.Triangulate2D(parameters);
+            }
+
+            public Geometry GetBase()
+            {
+                var parameters = new Triangulation2DParameters();
+                parameters.Points = listedPoints.ToArray();
+                parameters.Holes = Holes.ToArray();
+                parameters.Side = Side.Back;
+                parameters.Delaunay = true;
+
+                var triangulationAPI = new TriangulationAPI();
+                return triangulationAPI.Triangulate2DRaw(parameters);
             }
         }
 
