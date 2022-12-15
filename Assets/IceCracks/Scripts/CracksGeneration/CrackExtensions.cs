@@ -145,9 +145,23 @@ namespace IceCracks.CracksGeneration.Extensions
             return false;
         }
         
-        public static List<Vector2> SortVertices (IEnumerable<Vector2> points,Vector2 center)
+        public static List<Vector2> SortVertices (IEnumerable<Vector2> points,Vector2 center,bool isInverse =false)
         {
+            if (isInverse)
+                return points.OrderByDescending(c =>
+                    ((Mathf.Atan2(c.x - center.x, c.y - center.y) * Mathf.Rad2Deg) + 360) % 360).ToList(); 
             return points.OrderBy(c => ((Mathf.Atan2(c.x - center.x, c.y - center.y) * Mathf.Rad2Deg) + 360) % 360).ToList();
+        }
+
+        public static List<Vector2> SortVertices(IEnumerable<Vector2> points, bool isInverse = false)
+        {
+            Vector2 center = Vector2.zero;
+            foreach (var vector2 in points)
+            {
+                center += vector2;
+            }
+            center /= points.Count();
+            return SortVertices(points, center, isInverse);
         }
 
         //IMPORTANT
@@ -162,7 +176,7 @@ namespace IceCracks.CracksGeneration.Extensions
         public const float TOKEN_DEFAULT_CORE_FORCE_VALUE = 5f;
         public const int TOKEN_DEFAULT_MIN_SECTORS_COUNT = 10;
         public const int TOKEN_DEFAULT_MAX_SECTORS_COUNT = 20;
-        public const float TOKEN_DEFAULT_CORE_CIRCLE_RADIUS = 90f;
+        public const float TOKEN_DEFAULT_CORE_CIRCLE_RADIUS = 130f;
         //TODO: feature forLater
         //public const float TOKEN_DEFAULT_CORE_SPLIT_RADIUS = 20f;
         public const float TOKEN_DEFAULT_SECTOR_FRAGMENT_LENGTH = 15f;

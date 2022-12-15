@@ -43,21 +43,7 @@ namespace IceCracks.CracksGeneration
             //TODO: what is 2 means? parametrize this! 
             splitAmounts = new List<int>();
             splitAmounts.AddRange(splitCountByDepth);
-            
-            // var k = new GridOfPoints();
-            // var hole = k.MakeHoleCircle(Vector2.zero, .1f);
-            // GameObject go = new GameObject();
-            // go.AddComponent<MeshFilter>().sharedMesh = hole.ToUnityMesh();
-            // go.AddComponent<MeshCollider>();
-            //
-            // go = new GameObject();
-            // hole = k.MakeHoleCircle(Vector2.one * .1f, .1f);
-            // go.AddComponent<MeshFilter>().sharedMesh = hole.ToUnityMesh();
-            // go.AddComponent<MeshCollider>();
-            // go = new GameObject();
-            // go.AddComponent<MeshFilter>().sharedMesh = k.GetBase().ToUnityMesh();
-            // go.AddComponent<MeshCollider>();
-            
+
             return new HyperSpace(size, Vector2.zero, Vector2.one * 2, splitCountByDepth.Count, 0);
         }
 

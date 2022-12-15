@@ -44,7 +44,7 @@ namespace IceCracks.CracksGeneration
                     //     new Vector3(Random.Range(-35f, 35f), Random.Range(-35f, 35f), 0);
                 },
                 (c) => c.gameObject.SetActive(false),
-                null, true, 10, maxSize
+                null, true, 30, maxSize
             );
         }
 

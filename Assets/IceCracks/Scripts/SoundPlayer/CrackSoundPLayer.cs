@@ -49,7 +49,7 @@ public class CrackSoundPLayer : MonoBehaviour
             () => Instantiate(audioSource, transform, true),
             (c) => c.gameObject.SetActive(true),
             (c) => c.gameObject.SetActive(false),
-            null, true, 6, 30);
+            null, true, 6, 60);
     }
     
     [ContextMenu(nameof(PlayCrack))]

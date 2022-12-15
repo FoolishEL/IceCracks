@@ -24,13 +24,15 @@ namespace IceCracks.Math
 
         public static void SplitFloatByTwo(float initialValue, out float firstResult, out float secondResult)
         {
-            float startValue = initialValue;
-            var vector = Random.insideUnitCircle;
-            initialValue /= 2f;
-            var mainPart = Vector2.one.normalized;
-            float additivePart = mainPart.x * mainPart.x * (startValue - initialValue);
-            firstResult = vector.x * vector.x * initialValue + additivePart;
-            secondResult = vector.y * vector.y * initialValue + additivePart;
+            firstResult = Mathf.Lerp(0, initialValue, Random.Range(.4f, .6f));
+            secondResult = initialValue - firstResult;
+            // float startValue = initialValue;
+            // var vector = Random.insideUnitCircle;
+            // initialValue /= 2f;
+            // var mainPart = Vector2.one.normalized;
+            // float additivePart = mainPart.x * mainPart.x * (startValue - initialValue);
+            // firstResult = vector.x * vector.x * initialValue + additivePart;
+            // secondResult = vector.y * vector.y * initialValue + additivePart;
         }
 
         public static void SplitFloatByThree(float initialValue, out float firstResult, out float secondResult,

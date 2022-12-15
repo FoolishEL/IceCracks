@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using IceCracks.CracksGeneration.Extensions;
 using IceCracks.Math;
 using Jobberwocky.GeometryAlgorithms.Source.API;
 using Jobberwocky.GeometryAlgorithms.Source.Core;
 using Jobberwocky.GeometryAlgorithms.Source.Parameters;
 using UnityEngine;
+using Random = System.Random;
 
 namespace IceCracks.Utilities
 {
@@ -52,39 +54,181 @@ namespace IceCracks.Utilities
             return mesh;
         }
 
-        public static List<BMesh> CreateMeshesSegmentsFromPoints(List<Vector2> points, Vector2 center,Vector2 size)
+        public static List<BMesh> CreateMeshesSegmentsFromPoints(List<Vector2> points, Vector2 center,Vector2 size,List<Bounds> bounds)
         {
-            List<BMesh> meshes = new List<BMesh>(); 
-            BMesh mesh = new BMesh();
-            var uv = mesh.AddVertexAttribute("uv", BMesh.AttributeBaseType.Float, 2);
-            List<BMesh.Vertex> vertices = new List<BMesh.Vertex>();
-            vertices.Add(AddVertexToMesh(center.x, center.y, mesh, size));
-            vertices.Add(AddVertexToMesh(points[0].x, points[0].y, mesh, size));
-            vertices.Add(AddVertexToMesh(points[^1].x, points[^1].y, mesh, size));
-            mesh.AddFace(vertices.ToArray());
-            meshes.Add(mesh);
+            bounds.Clear();
+            List<BMesh> meshes = new List<BMesh>();
+            if (MathExtensions.GetRandomWithPercent(.3f))
+            {
+                meshes.Add(CreateVShape(new List<Vector2>() { center, points[0], points[^1] }, size,out var b));
+                bounds.Add(b);
+            }
+            else
+            {
+                var res = SplitTriangles(center, points[0], points[^1]);
+                foreach (var item in res)
+                {
+                    meshes.Add(CreateVShape(item, size,out var b));
+                    bounds.Add(b);
+                }
+            }
+            
 
             for (int i = 0; i < points.Count - 1; i++)
             {
-                BMesh meshTemp = new BMesh();
-                meshTemp.AddVertexAttribute("uv", BMesh.AttributeBaseType.Float, 2);
-                List<BMesh.Vertex> verticesTemp = new List<BMesh.Vertex>();
-                verticesTemp.Add(AddVertexToMesh(center.x, center.y, meshTemp, size));
-                verticesTemp.Add(AddVertexToMesh(points[i+1].x, points[i+1].y, meshTemp, size));
-                verticesTemp.Add(AddVertexToMesh(points[i].x, points[i].y, meshTemp, size));
-                meshTemp.AddFace(verticesTemp.ToArray());
-                meshes.Add(meshTemp);
+                if (MathExtensions.GetRandomWithPercent(.2f))
+                {
+                    meshes.Add(CreateVShape(new List<Vector2>() { center, points[i + 1], points[i] }, size,out var b3));
+                    bounds.Add(b3);
+                }
+                else
+                {
+                    var res = SplitTriangles(center, points[i + 1], points[i]);
+                    foreach (var item in res)
+                    {
+                        meshes.Add(CreateVShape(item, size,out var b2));
+                        bounds.Add(b2);
+                    }
+                }
             }
             return meshes;
         }
 
-        private static BMesh.Vertex AddVertexToMesh(float x, float y, BMesh bMesh, Vector2 size)
+        private static List<List<Vector2>> SplitTriangles(Vector2 center, Vector2 first, Vector2 second)
+        {
+            List<List<Vector2>> result = new List<List<Vector2>>();
+            MathExtensions.SplitFloatByTwo(1f, out var firstD, out var secondD);
+            if (firstD > secondD)
+                (first, second) = (second, first);
+            bool isThree = MathExtensions.GetRandomWithPercent(.5f);
+
+            List<Vector2> current = new List<Vector2>();
+            current.Add(center);
+            current.Add(Vector2.Lerp(first, center, firstD));
+            current.Add(Vector2.Lerp(second, center, firstD));
+            current = CrackExtensions.SortVertices(current, true);
+            result.Add(current);
+
+            current = new List<Vector2>();
+            current.Add(Vector2.Lerp(second, center, firstD));
+            current.Add(Vector2.Lerp(second, center, secondD));
+            current.Add(Vector2.Lerp(first, center, secondD));
+            current.Add(Vector2.Lerp(first, center, firstD));
+            current = CrackExtensions.SortVertices(current, true);
+            if (TrySplitQuads(current, out var firstL1, out var secondL1))
+            {
+                result.Add(CrackExtensions.SortVertices(firstL1, true));
+                result.Add(CrackExtensions.SortVertices(secondL1, true));
+            }
+            else
+            {
+                result.Add(current);
+            }
+            
+            if (isThree)
+            {
+                current = new List<Vector2>();
+                current.Add(Vector2.Lerp( first,center, secondD));
+                current.Add(first);
+                current.Add(second);
+                current.Add(Vector2.Lerp( second,center, secondD));
+                current = CrackExtensions.SortVertices(current, true);
+                if (TrySplitQuads(current, out var firstL2, out var secondL2))
+                {
+                    result.Add(CrackExtensions.SortVertices(firstL2, true));
+                    result.Add(CrackExtensions.SortVertices(secondL2, true));
+                }
+                else
+                {
+                    result.Add(current);
+                }
+            }
+            return result;
+        }
+
+        private static bool TrySplitQuads(List<Vector2> initials,out List<Vector2>first,out List<Vector2> second)
+        {
+            first = new List<Vector2>();
+            second = new List<Vector2>();
+            if (initials.Count != 4)
+            {
+                return false;
+            }
+
+            if (Vector2.Distance(initials[0], initials[1])*1.3 < Vector2.Distance(initials[2], initials[3]))
+            {
+                Vector2 firstSplitLine = Vector2.Lerp(initials[0], initials[1], UnityEngine.Random.Range(.4f, .6f));
+                Vector2 secondSplitLine = Vector2.Lerp(initials[2], initials[3], UnityEngine.Random.Range(.4f, .6f));
+                first.Add(initials[0]);
+                first.Add(firstSplitLine);
+                first.Add(secondSplitLine);
+                first.Add(initials[3]);
+                second.Add(initials[1]);
+                second.Add(initials[2]);
+                second.Add(secondSplitLine);
+                second.Add(firstSplitLine);
+                return true;
+            }
+
+            return false;
+        }
+
+        public static BMesh CreateVShape(List<Vector2> points,Vector2 size,out Bounds bound)
+        {
+            float down = -.2f;
+            BMesh mesh = new BMesh();
+            var uv = mesh.AddVertexAttribute("uv", BMesh.AttributeBaseType.Float, 2);
+            List<BMesh.Vertex> vertices = new List<BMesh.Vertex>();
+            for (int i = 0; i < points.Count; i++)
+            {
+                vertices.Add(AddVertexToMesh(points[i].x, points[i].y, mesh, size));
+            }
+            mesh.AddFace(vertices.ToArray());
+            Vector2 center = Vector2.zero;
+            points.ForEach(c => center += c);
+            center /= points.Count;
+            bound = new Bounds();
+            bound.center = center;
+            List<Vector2> offsetPoints = new List<Vector2>();
+            foreach (var p in points)
+            {
+                offsetPoints.Add(p + (p - center) * .2f);
+                bound.Encapsulate(p);
+            }
+
+            for (int i = 0; i < points.Count - 1; i++)
+            {
+                BMesh first = new BMesh();
+                uv = first.AddVertexAttribute("uv", BMesh.AttributeBaseType.Float, 2);
+                vertices = new List<BMesh.Vertex>();
+                vertices.Add(AddVertexToMesh(offsetPoints[i].x, offsetPoints[i].y, first, size,down));
+                vertices.Add(AddVertexToMesh(offsetPoints[i+1].x, offsetPoints[i+1].y, first, size,down));
+                vertices.Add(AddVertexToMesh(points[i+1].x, points[i+1].y, first, size));
+                vertices.Add(AddVertexToMesh(points[i].x, points[i].y, first, size));
+                first.AddFace(vertices.ToArray());
+                BMeshOperators.Merge(mesh, first);
+            }
+
+            BMesh third = new BMesh();
+            uv = third.AddVertexAttribute("uv", BMesh.AttributeBaseType.Float, 2);
+            vertices = new List<BMesh.Vertex>();
+            vertices.Add(AddVertexToMesh(offsetPoints[^1].x, offsetPoints[^1].y, third, size,down));
+            vertices.Add(AddVertexToMesh(offsetPoints[0].x, offsetPoints[0].y, third, size,down));
+            vertices.Add(AddVertexToMesh(points[0].x, points[0].y, third, size));
+            vertices.Add(AddVertexToMesh(points[^1].x, points[^1].y, third, size));
+            third.AddFace(vertices.ToArray());
+            
+            BMeshOperators.Merge(mesh, third);
+            return mesh;
+        }
+
+        private static BMesh.Vertex AddVertexToMesh(float x, float y, BMesh bMesh, Vector2 size, float height = 0f)
         {
             float initialX = (x + 1f) / 2f;
             float initialY = (1f - y) / 2f;
             x *= (size.x / 2f);
             y *= (size.y / 2f);
-            var vert = bMesh.AddVertex(x, 0, y);
+            var vert = bMesh.AddVertex(x, height, y);
             vert.attributes["uv"] = new BMesh.FloatAttributeValue(initialX, initialY);
             return vert;
         }
@@ -101,8 +245,8 @@ namespace IceCracks.Utilities
             private bool isCut;
             private HyperSpace[,] subSpaces;
             private List<HyperSpace> listedSubSpaces;
-            private List<Bounds> emptyBy;
-            private List<Bounds> cutBy;
+            // private List<Bounds> emptyBy;
+            // private List<Bounds> cutBy;
 
             private BMesh cachedBMesh;
             private bool isCorner;
@@ -119,8 +263,8 @@ namespace IceCracks.Utilities
                 this.maxDepth = maxDepth;
                 this.currentDepth = currentDepth;
                 isCorner = false;
-                emptyBy = new List<Bounds>();
-                cutBy = new List<Bounds>();
+                // emptyBy = new List<Bounds>();
+                // cutBy = new List<Bounds>();
                 isEmpty = false;
                 isCut = false;
                 mainSquare = new Bounds
@@ -131,8 +275,12 @@ namespace IceCracks.Utilities
                 if (currentDepth == maxDepth)
                     cachedSquare = GetRawSquare();
                 else
-
                     cachedSquare = -1f;
+                
+                if (currentDepth == 0)
+                {
+                    GenerateSubSpaces();
+                }
             }
 
             public float GetRawSquare() => mainSquare.extents.magnitude;
@@ -166,29 +314,26 @@ namespace IceCracks.Utilities
 
             public Vector3 GetMainSquarePosition() => mainSquare.center;
 
-            public async Task CutOut(Bounds rectangle,List<HyperSpace>onEdge)
+            public async Task CutOut(Bounds rectangleOrdinary,List<HyperSpace>onEdge)
             {
-                if (!mainSquare.Intersects(rectangle))
+                if (!mainSquare.Intersects(rectangleOrdinary)||isEmpty)
                 {
                     return;
                 }
 
-                if (isEmpty)
-                    return;
-
                 if (currentDepth >= maxDepth ||
-                    (rectangle.Contains(mainSquare.max) && rectangle.Contains(mainSquare.min)))
+                    (rectangleOrdinary.Contains(mainSquare.max) && rectangleOrdinary.Contains(mainSquare.min)))
                 {
                     if (currentDepth >= maxDepth)
                     {
-                        if (Vector2.Distance(mainSquare.center, rectangle.center) > rectangle.size.magnitude*.4f)
+                        if (Vector2.Distance(mainSquare.center, rectangleOrdinary.center) > rectangleOrdinary.size.magnitude*.4f)
                         {
                             onEdge.Add(this);
                             return;
                         }
                     }
                     //empty.Add(this);
-                    emptyBy.Add(rectangle);
+                    //emptyBy.Add(rectangleOrdinary);
                     cachedBMesh = null;
                     isEmpty = true;
                     return;
@@ -199,7 +344,7 @@ namespace IceCracks.Utilities
                     GenerateSubSpaces();
                 isCut = true;
                 cachedSquare = -1f;
-                cutBy.Add(rectangle);
+                //cutBy.Add(rectangleOrdinary);
                 int emptinessCount = 0;
                 //await Task.WhenAll(listedSubSpaces.Select(c => c.CutOut(rectangle)));
 
@@ -210,7 +355,7 @@ namespace IceCracks.Utilities
                     for (int j = 0; j < splitCount; j++)
                     {
                         var hspace = subSpaces[i, j];
-                        await hspace.CutOut(rectangle, onEdge);
+                        await hspace.CutOut(rectangleOrdinary, onEdge);
                         if (hspace.isEmpty)
                             emptinessCount++;
                     }
@@ -234,18 +379,73 @@ namespace IceCracks.Utilities
                 //emptinessCount = listedSubSpaces.Count(c => c.isEmpty);
                 if (emptinessCount == splitCount * splitCount)
                 {
-                    if (cutBy.Count > 1)
-                    {
-                        emptyBy.AddRange(cutBy);
-                    }
-                    else
-                    {
-                        emptyBy.Add(rectangle);
-                    }
+                    // if (cutBy.Count > 1)
+                    // {
+                    //     emptyBy.AddRange(cutBy);
+                    // }
+                    // else
+                    // {
+                    //     emptyBy.Add(rectangleOrdinary);
+                    // }
 
                     isEmpty = true;
                     cachedBMesh = null;
                 }
+            }
+
+            public async Task GetAll(Bounds bounds,List<BMesh> meshes)
+            {
+                if (!mainSquare.Intersects(bounds)||isEmpty)
+                {
+                    return;
+                }
+                // if (currentDepth >= maxDepth Vector2.Distance(mainSquare.center, bounds.center) > bounds.size.magnitude*.4f)
+                // {
+                //     meshes.Add(GetBMesh());
+                //     cachedBMesh = null;
+                //     isEmpty = true;
+                //     return;
+                // }
+
+                if (currentDepth >= maxDepth ||
+                    (bounds.Contains(mainSquare.max) && bounds.Contains(mainSquare.min))) 
+                {
+                    meshes.Add(GetBMesh());
+                    cachedBMesh = null;
+                    isEmpty = true;
+                    return;
+                }
+
+                cachedBMesh = null;
+                if (subSpaces is null)
+                    GenerateSubSpaces();
+                isCut = true;
+                cachedSquare = -1f;
+                //cutBy.Add(rectangleOrdinary);
+                int emptinessCount = 0;
+                //await Task.WhenAll(listedSubSpaces.Select(c => c.CutOut(rectangle)));
+
+                #region unuptimized
+
+                for (int i = 0; i < splitCount; i++)
+                {
+                    for (int j = 0; j < splitCount; j++)
+                    {
+                        var hspace = subSpaces[i, j];
+                        await hspace.GetAll(bounds, meshes);
+                        if (hspace.isEmpty)
+                            emptinessCount++;
+                    }
+                }
+
+                #endregion
+                
+                if (emptinessCount == splitCount * splitCount)
+                {
+                    isEmpty = true;
+                    cachedBMesh = null;
+                }
+                
             }
 
             public static void AdjustBorders(List<HyperSpace> edges)
@@ -473,6 +673,7 @@ namespace IceCracks.Utilities
             }
         }
         
+        /*
         public class GridOfPoints
         {
             private List<Vector2> CurrentBounds;
@@ -546,7 +747,8 @@ namespace IceCracks.Utilities
                 return triangulationAPI.Triangulate2DRaw(parameters);
             }
         }
-
+        */
+        
         public static Texture2D CopyTexture(Texture2D original)
         {
             Texture2D copyTexture = new Texture2D(original.width, original.height);

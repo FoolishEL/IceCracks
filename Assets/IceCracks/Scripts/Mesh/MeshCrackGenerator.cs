@@ -46,8 +46,6 @@ namespace IceCracks.CracksGeneration
 
         private void OnMouseDown()
         {
-            if (isBusy)
-                return;
             Ray ray = raycastCamera.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out var hit, 100))
             {
