@@ -147,7 +147,7 @@ namespace IceCracks.CracksGeneration.Extensions
         
         public static List<Vector2> SortVertices (IEnumerable<Vector2> points,Vector2 center)
         {
-            return points.OrderBy(c => ((Mathf.Atan2(c.x - center.x, c.y - center.y) * Mathf.Rad2Deg) + 360) % 360).ToList();
+            return points.OrderByDescending(c => ((Mathf.Atan2(c.x - center.x, c.y - center.y) * Mathf.Rad2Deg) + 360) % 360).ToList();
         }
 
         //IMPORTANT

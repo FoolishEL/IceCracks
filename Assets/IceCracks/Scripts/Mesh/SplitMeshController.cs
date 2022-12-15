@@ -44,14 +44,14 @@ namespace IceCracks.CracksGeneration
             splitAmounts = new List<int>();
             splitAmounts.AddRange(splitCountByDepth);
             
-            var k = new GridOfPoints(300);
-            var hole = k.MakeHole(Vector2.zero, .1f);
-            GameObject go = new GameObject();
-            go.AddComponent<MeshFilter>().sharedMesh = hole.ToUnityMesh();
-            go.AddComponent<MeshCollider>();
-            go = new GameObject();
-            go.AddComponent<MeshFilter>().sharedMesh = k.GetBase().ToUnityMesh();
-            go.AddComponent<MeshCollider>();
+            // var k = new GridOfPoints(300);
+            // var hole = k.MakeHole(Vector2.zero, .1f);
+            // GameObject go = new GameObject();
+            // go.AddComponent<MeshFilter>().sharedMesh = hole.ToUnityMesh();
+            // go.AddComponent<MeshCollider>();
+            // go = new GameObject();
+            // go.AddComponent<MeshFilter>().sharedMesh = k.GetBase().ToUnityMesh();
+            // go.AddComponent<MeshCollider>();
             
             return new HyperSpace(size, Vector2.zero, Vector2.one * 2, splitCountByDepth.Count, 0);
         }
