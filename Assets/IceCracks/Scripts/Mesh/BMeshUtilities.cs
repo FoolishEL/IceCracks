@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using IceCracks.Math;
 using UnityEngine;
@@ -53,7 +52,7 @@ namespace IceCracks.Utilities
         private static Vertex AddVertexToMesh(float x, float y, BMesh bMesh, Vector2 size)
         {
             float initialX = (x + 1f) / 2f;
-            float initialY = (y + 1f) / 2f;
+            float initialY = (1f - y) / 2f;
             x *= (size.x / 2f);
             y *= (size.y / 2f);
             var vert = bMesh.AddVertex(x, 0, y);

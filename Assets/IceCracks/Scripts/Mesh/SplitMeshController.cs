@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace IceCracks.CracksGeneration
 {
@@ -18,8 +19,13 @@ namespace IceCracks.CracksGeneration
         [SerializeField] private List<int> splitCountByDepth;
         private IcePiece lastPiece;
 
-        public static event Action OnRestartCommandRecive = delegate { }; 
+        public static event Action OnRestartCommandRecive = delegate { };
 
+        [ContextMenu(nameof(KKk))]
+        private void KKk()
+        {
+            SceneManager.LoadScene(0);
+        }
         private void Start() => GenerateInitialMesh();
 
         private void GenerateInitialMesh()

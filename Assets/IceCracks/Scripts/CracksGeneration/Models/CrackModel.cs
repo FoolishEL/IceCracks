@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using IceCracks.Utilities;
+using Jobberwocky.GeometryAlgorithms.Source.API;
+using Jobberwocky.GeometryAlgorithms.Source.Core;
+using Jobberwocky.GeometryAlgorithms.Source.Parameters;
 using UnityEngine;
 
 namespace IceCracks.CracksGeneration.Models
@@ -58,7 +61,7 @@ namespace IceCracks.CracksGeneration.Models
         public bool AddCracks(Vector2 relativePosition, float force)
         {
             var position = new Vector2Int((int)(relativePosition.x * sizeOfTexture.x),
-                sizeOfTexture.y - (int)(relativePosition.y * sizeOfTexture.y));
+                /*sizeOfTexture.y - */(int)(relativePosition.y * sizeOfTexture.y));
             var corePositions = GetCores().ToList();
             var isProlonged = false;
             foreach (var item in corePositions)
@@ -88,7 +91,7 @@ namespace IceCracks.CracksGeneration.Models
             for (int i = 0; i < res.Count; i++)
             {
                 var item = res[i];
-                item.y = sizeOfTexture.y - item.y;
+                //item.y = sizeOfTexture.y - item.y;
                 res[i] = MathExtensions.Rebase(item, Vector2.zero, sizeOfTexture, -Vector2.one, Vector2.one);
                 center += res[i];
                 var newExitPoint = MathExtensions.Rebase(item, Vector2.zero, sizeOfTexture, -Vector2.one, Vector2.one);
@@ -96,6 +99,23 @@ namespace IceCracks.CracksGeneration.Models
             }
             center /= res.Count;
             var bMesh = BMeshUtilities.CreateMeshFromPoints(res, center, Vector2.one * 10f);
+            var parameters = new Triangulation2DParameters();
+            var points = core.GetPoints();
+            HashSet<Vector3> ListPoint = new HashSet<Vector3>();
+            foreach (var item in points)
+            {
+                ListPoint.Add(MathExtensions.Rebase(item.Item1, Vector2.zero, sizeOfTexture, -Vector2.one, Vector2.one));
+                ListPoint.Add(MathExtensions.Rebase(item.Item2, Vector2.zero, sizeOfTexture, -Vector2.one, Vector2.one));
+            }
+            parameters.Points = ListPoint.ToArray();
+            parameters.Side = Side.Back;
+            parameters.Delaunay = false;
+            var triangulationAPI = new TriangulationAPI();
+            var mesh = triangulationAPI.Triangulate2D(parameters);
+            var geometry = triangulationAPI.Triangulate2DRaw(parameters);
+            GameObject obj = new GameObject();
+            obj.AddComponent<MeshFilter>().sharedMesh = mesh;
+            obj.AddComponent<MeshRenderer>();
             OnNewCoreCreated.Invoke(bMesh,rect);
             cracks.Add(core);
             cracks.AddRange(generated);

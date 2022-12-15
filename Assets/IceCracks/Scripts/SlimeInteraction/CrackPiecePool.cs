@@ -7,6 +7,7 @@ namespace IceCracks.CracksGeneration
     public class CrackPiecePool : MonoBehaviour
     {
         [SerializeField] private SimpleMeshView prefab;
+        [SerializeField] private int maxSize = 120;
         public static CrackPiecePool Instance { get; private set; }
 
         private ObjectPool<SimpleMeshView> objectPool;
@@ -21,6 +22,8 @@ namespace IceCracks.CracksGeneration
             else
                 Destroy(this);
         }
+        
+        private void OnDestroy() => Instance = null;
 
         private void PreparePool()
         {
@@ -37,9 +40,11 @@ namespace IceCracks.CracksGeneration
                     c.gameObject.SetActive(true);
                     c.transform.position = transform.position;
                     c.transform.rotation = Quaternion.identity;
+                    c.transform.GetChild(0).localEulerAngles =
+                        new Vector3(Random.Range(-35f, 35f), Random.Range(-35f, 35f), 0);
                 },
                 (c) => c.gameObject.SetActive(false),
-                null, true, 10, 40
+                null, true, 10, maxSize
             );
         }
 

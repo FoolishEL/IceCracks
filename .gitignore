@@ -20,12 +20,4 @@ $RECYCLE.BIN/
 Desktop.ini
 
 #allowed folders
-Assets/GitIgnoreFolder*
-Assets/NGUI
-Assets/Plugins
-Assets/!!MiniGames.meta
-Assets/ExampleFolder.meta
-Assets/NGUI.meta
-Assets/Plugins.meta
-Assets/ExampleFolder
-Assets/!!MiniGames
+

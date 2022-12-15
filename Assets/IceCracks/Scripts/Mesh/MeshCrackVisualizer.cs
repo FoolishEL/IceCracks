@@ -57,12 +57,13 @@ namespace IceCracks.Views
 
         private IEnumerator SlowAppear()
         {
+            CrackSoundPLayer.Instance.PlayFreeze();
             meshCrackGenerator.SetBusyStatus(this);
             for (float f = 0; f < speedOfAppear; f += Time.deltaTime)
             {
                 currentMaterial.color = Color.Lerp(Color.clear, Color.white,f/speedOfAppear);
-                if(MathExtensions.GetRandomWithPercent(.4f))
-                    CrackSoundPLayer.Instance.PlayFreeze();
+                // if(MathExtensions.GetRandomWithPercent(.2f))
+                //     CrackSoundPLayer.Instance.PlayFreeze();
                 yield return null;
             }
             meshCrackGenerator.UnsetBusyStatus(this);
@@ -90,12 +91,13 @@ namespace IceCracks.Views
 
         private async Task PlayCrack()
         {
-            int randCount = Random.Range(3, 6);
-            for (int i = 0; i < randCount; i++)
-            {
-                CrackSoundPLayer.Instance.PlayCrack();
-                await Task.Delay(Random.Range(30, 100));
-            }
+            CrackSoundPLayer.Instance.PlayCrack();
+            // int randCount = Random.Range(3, 6);
+            // for (int i = 0; i < randCount; i++)
+            // {
+            //     CrackSoundPLayer.Instance.PlayCrack();
+            //     await Task.Delay(Random.Range(30, 100));
+            // }
         }
 
         private async Task RawDraw(IEnumerable<(Vector2Int, Vector2Int)> lines)

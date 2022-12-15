@@ -1,0 +1,411 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8371aa3cb7575943a01fd4cb2275d6e, type: 3}
+  m_Name: SlimeData_List
+  m_EditorClassIdentifier: 
+  list:
+  - slimeMaterial: {fileID: 2100000, guid: 94e27d4d5e5cd444894d24b2664cacd9, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 21
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: a3cca231f2f90084a95ffac9e8cbbc79, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 34
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: c186dca516c263448b8415dfe010900f, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 51
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: b6da9955755f1ba44a7a77d7976f3945, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 25
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 83f63931cad12664287e1fc5a94ae983, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 85
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: efb8090a74bc32841a3eb75a68a72464, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 91
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: bf1765056a59dc7498798659db5b4943, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 4
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: c5cb61c4e749e3c48b438141c7776b09, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 15
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 9868092a64ce97b4c91ee180fe854d76, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 14
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 1ff3187900c54694bbe1b640bc1a9f58, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 15
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: b0cf6cfbdbb272d458d84d01c5f0ce11, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 63
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: ded65bfeefa886745b015268dfc84213, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 31
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 2b5c7a46fa60985478f84bacd96525e4, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 23
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 8280176a5eec4f448affaf54d4d24f57, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 9
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 1fd27a45acfc2fb4a8a9f4b36a196abd, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 92
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 952ac2cf503e7f8468beee9538355e39, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 47
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: acaf85578d3f03d46924fe95a7715e22, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 106
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: f8a9d7cd669b63a4da9f21fa5120559c, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 32
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 142557ecebedc33489b6a0d3bbfd2a38, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 103
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 70b4925996b9a6c42940d651d7f4a052, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 49
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 883793a41f7ee5c439befe85d1aefd49, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 111
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 0b2d71e8456132749b9ef081ea7bece5, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 17
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: d27823fca13a34041ba70a80e632ecd4, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 9
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 4e73fe7b1def84041bb2888ed35e2664, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 116
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 44848adc1fd92fe4fbdd6d3711adf390, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 83
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: f845793221a655a4db47c60abbd7a38c, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 23
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 3f91e9a526af7454b971003a0d62f50b, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 98
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: b42138d0fd45cee4f9a6cff4e14aec1c, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 46
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: af9686853e467ff419ee4a4bfb5977fa, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 87
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 2e7e8878f5f654e43a5bff156e5feefc, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 61
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 98ad44294e8b7234c8ca8568c73090f8, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 100
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: eb25f4de671ebb64fb7334b0ec38692a, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 33
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 870440cdcc3be7349b4869e909e12da4, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 81
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 89cc9452fd4166b4dbb8ebd834b33e3a, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 109
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 559ef7733dedc9746804d43497f102f8, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 63
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 600ae7a2965d6944680abe635a8e2870, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 61
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: fd82971fd048d1b499d3986ceef1affe, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 74
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 87c6fa8ca141b42429102d16c11d051e, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 51
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: eccd4629f53df504091a65ec79315774, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 64
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 4bc9566af277bac4892a13efc3c59bea, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 100
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 29b56e04a7ff57b49843374e60f3010e, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 17
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 1261b81d87b3fda429c19a1ea31ee8b5, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 96
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 7a65fdcfd4f0f5b4bb57edc09de64d2d, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 64
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: bba68b2875b2df94494ba120307e0cdf, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 113
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 49329da161d8d8e47a116bf4acabf0a9, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 104
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 93cda1d287996b146a1188135f9974d2, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 113
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: ad05550bef54a78488c433f1c8100e4a, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 104
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 7ac263d3774ccc24faea1e48021d29dc, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 38
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: f2a78858b9ebd7240abfb6138c8595ac, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 46
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 58712d5aed44f094496373bd98e67908, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 1
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: b4d4c405297bd41478f572aff5ee97cc, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 79
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: df3352c000eb0dd419942d3894590a92, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 88
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: fb76aff8625270841add16d821a1ba0d, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 40
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: a1975934e9b7ff54bb5c56a7bde36faf, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 92
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 9216414c9712d3c48b03ff362e1928f4, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 58
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 2845a7a11ea00ea4b97ec091558c4195, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 111
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 57d7ac814dc875346be85231a7120c60, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 22
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 3686b2ce08b623b46bafea38dc3ad510, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 77
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: b632d049eb4004b45aa05e69d7d6d16d, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 93
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: c9e501ecf94f4fc4a9c711fbf2c16e00, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 13
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: a043825d1fc814042b55a09d0c16801f, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 79
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 4d463faaaa3860c44870133885ecbf56, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 28
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: f5b7ed27037583d4899020647aa5ae24, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 42
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: f6b84b14755c33a4c87aae7ff616e120, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 94
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 424c06927f246c14a9e9a9d384859be5, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 97
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1
+  - slimeMaterial: {fileID: 2100000, guid: 851bb8d0d3bf4d943afba3abfaf9155c, type: 2}
+    slimeSoundIndex: 0
+    slimeSettingsIndex: 74
+    itemsIndex: -1
+    itemsCount: 10
+    isItems2D: 1

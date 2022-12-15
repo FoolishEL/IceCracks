@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using IceCracks.Settings;
@@ -31,6 +32,8 @@ public class CrackSoundPLayer : MonoBehaviour
             Destroy(this);
         }
     }
+
+    private void OnDestroy() => Instance = null;
 
     private void Initialize()
     {
