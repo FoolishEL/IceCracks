@@ -77,12 +77,12 @@ namespace IceCracks.Views
             IsDrawn = false;
             meshCrackGenerator.SetBusyStatus(this);
             //TODO: refactor this
-            lines = lines.OrderBy(c => Vector2Int.Distance(center, c.Item1));
-            var first = lines.Where((item, index) => index % 3 == 0);
-            var second = lines.Where((item, index) => index % 3 == 1);
-            var third = lines.Where((item, index) => index % 3 == 2);
-            PlayCrack();
-            await Task.WhenAll(RawDraw(first), RawDraw(second), RawDraw(third));
+            // lines = lines.OrderBy(c => Vector2Int.Distance(center, c.Item1));
+            // var first = lines.Where((item, index) => index % 3 == 0);
+            // var second = lines.Where((item, index) => index % 3 == 1);
+            // var third = lines.Where((item, index) => index % 3 == 2);
+            await PlayCrack();
+            //await Task.WhenAll(RawDraw(first), RawDraw(second), RawDraw(third));
             meshCrackGenerator.UnsetBusyStatus(this);
             IsDrawn = true;
             if (!isSilent)

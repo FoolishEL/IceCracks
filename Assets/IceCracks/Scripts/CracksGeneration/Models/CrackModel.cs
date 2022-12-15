@@ -2,9 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using IceCracks.Utilities;
-using Jobberwocky.GeometryAlgorithms.Source.API;
-using Jobberwocky.GeometryAlgorithms.Source.Core;
-using Jobberwocky.GeometryAlgorithms.Source.Parameters;
 using UnityEngine;
 
 namespace IceCracks.CracksGeneration.Models
@@ -16,7 +13,7 @@ namespace IceCracks.CracksGeneration.Models
     {
         private Vector2Int sizeOfTexture;
         private List<CrackArea> cracks;
-        public event Action<BMesh,Bounds> OnNewCoreCreated = delegate { };
+        public event Action<List<BMesh>,List<Bounds>,Bounds> OnNewCoreCreated = delegate { };
 
         public CrackModel(Vector2Int sizeOfTexture)
         {
@@ -80,7 +77,7 @@ namespace IceCracks.CracksGeneration.Models
             Vector2 newPosition = new Vector2(MathExtensions.Rebase(relativePosition.x, 0, 1, -1, 1),
                 MathExtensions.Rebase(relativePosition.y, 0, 1, -1, 1));
             var res = CrackExtensions.SortVertices(core.ExitCrackPositions.Select(c => (Vector2)c), position);
-            
+            List<Bounds> bounds = new List<Bounds>();
             Bounds rect = new Bounds
             {
                 center = newPosition
@@ -96,9 +93,27 @@ namespace IceCracks.CracksGeneration.Models
                 center += res[i];
                 var newExitPoint = MathExtensions.Rebase(item, Vector2.zero, sizeOfTexture, -Vector2.one, Vector2.one);
                 rect.Encapsulate(newExitPoint);
+                bounds.Add(new Bounds
+                {
+                    center = newExitPoint
+                });
             }
             center /= res.Count;
-            var bMesh = BMeshUtilities.CreateMeshFromPoints(res, center, Vector2.one * 10f);
+            var bMesh = BMeshUtilities.CreateMeshesSegmentsFromPoints(res, center, Vector2.one * 10f);
+            // foreach (var m in bMesh)
+            // {
+            //     Vector3 c = Vector3.zero;
+            //     foreach (var v in m.vertices)
+            //     {
+            //         c += new Vector3(v.point.x, 0, v.point.y);// v.point;
+            //     }
+            //     c /= m.vertices.Count;
+            //     bounds.Add(new Bounds
+            //     {
+            //         center = c
+            //     });
+            // }
+            /*
             var parameters = new Triangulation2DParameters();
             var points = core.GetPoints();
             HashSet<Vector3> ListPoint = new HashSet<Vector3>();
@@ -116,7 +131,8 @@ namespace IceCracks.CracksGeneration.Models
             GameObject obj = new GameObject();
             obj.AddComponent<MeshFilter>().sharedMesh = mesh;
             obj.AddComponent<MeshRenderer>();
-            OnNewCoreCreated.Invoke(bMesh,rect);
+            */
+            OnNewCoreCreated.Invoke(bMesh,bounds,rect);
             cracks.Add(core);
             cracks.AddRange(generated);
             return false;

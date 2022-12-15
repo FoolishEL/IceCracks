@@ -151,6 +151,10 @@ namespace IceCracks.Math
             v.y = sin * tx + cos * ty;
             return v;
         }
+        public static Vector2 RotateNew(Vector2 v, float degrees)
+        {
+            return v.Rotate(degrees);
+        }
 
         public static float Rebase(float initialValue, float minInitial, float maxInitial, float minNew, float maxNew)
         {

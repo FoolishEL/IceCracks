@@ -52,6 +52,32 @@ namespace IceCracks.Utilities
             return mesh;
         }
 
+        public static List<BMesh> CreateMeshesSegmentsFromPoints(List<Vector2> points, Vector2 center,Vector2 size)
+        {
+            List<BMesh> meshes = new List<BMesh>(); 
+            BMesh mesh = new BMesh();
+            var uv = mesh.AddVertexAttribute("uv", BMesh.AttributeBaseType.Float, 2);
+            List<BMesh.Vertex> vertices = new List<BMesh.Vertex>();
+            vertices.Add(AddVertexToMesh(center.x, center.y, mesh, size));
+            vertices.Add(AddVertexToMesh(points[0].x, points[0].y, mesh, size));
+            vertices.Add(AddVertexToMesh(points[^1].x, points[^1].y, mesh, size));
+            mesh.AddFace(vertices.ToArray());
+            meshes.Add(mesh);
+
+            for (int i = 0; i < points.Count - 1; i++)
+            {
+                BMesh meshTemp = new BMesh();
+                meshTemp.AddVertexAttribute("uv", BMesh.AttributeBaseType.Float, 2);
+                List<BMesh.Vertex> verticesTemp = new List<BMesh.Vertex>();
+                verticesTemp.Add(AddVertexToMesh(center.x, center.y, meshTemp, size));
+                verticesTemp.Add(AddVertexToMesh(points[i+1].x, points[i+1].y, meshTemp, size));
+                verticesTemp.Add(AddVertexToMesh(points[i].x, points[i].y, meshTemp, size));
+                meshTemp.AddFace(verticesTemp.ToArray());
+                meshes.Add(meshTemp);
+            }
+            return meshes;
+        }
+
         private static BMesh.Vertex AddVertexToMesh(float x, float y, BMesh bMesh, Vector2 size)
         {
             float initialX = (x + 1f) / 2f;
@@ -449,51 +475,55 @@ namespace IceCracks.Utilities
         
         public class GridOfPoints
         {
-            private Vector2 [,] points;
-            private List<Vector3> listedPoints;
+            private List<Vector2> CurrentBounds;
+            private List<(Vector3[],Bounds)> Holes;
 
-            private float gridSize;
-            private List<Vector3[]> Holes;
-
-            public GridOfPoints(int miniGridCount)
+            public GridOfPoints()
             {
-                Holes = new List<Vector3[]>();
-                listedPoints = new List<Vector3>();
-                gridSize = 2f / miniGridCount;
-                points = new Vector2[miniGridCount, miniGridCount];
-                Vector2 startPoint = Vector2.one * -1;
-                float currentX = 0f;
-                float currentY = 0f;
-                for (int i = 0; i < miniGridCount; i++)
+                CurrentBounds = new List<Vector2>();
+                Holes = new List<(Vector3[],Bounds)>();
+                float stepLength = .1f;
+                List<Vector2> steps = new List<Vector2>()
                 {
-                    for (int j = 0; j < miniGridCount; j++)
+                    Vector2.up, Vector2.right, Vector2.down, Vector2.left
+                };
+                Vector2 initialPos = Vector2.one * -.5f;
+                for (int i = 0; i < 4; i++)
+                {
+                    var currentStep = steps[i];
+                    currentStep *= stepLength;
+                    for (int j = 0; j < (2f / stepLength); j++)
                     {
-                        points[i, j] = startPoint + Vector2.right * currentX + Vector2.up * currentY;
-                        listedPoints.Add(points[i, j]);
-                        currentY += gridSize;
+                        CurrentBounds.Add(initialPos);
+                        initialPos += currentStep;
                     }
-
-                    currentY = 0f;
-                    currentX += gridSize;
                 }
             }
 
-            public Geometry MakeHole(Vector2 position,float radius)
+            public Geometry MakeHoleCircle(Vector2 position,float radius)
             {
-                var listPoints = new List<Vector2>();
-                foreach (var point in points)
+                Bounds currentBounds = new Bounds
                 {
-                    if (Vector2.Distance(point, position) < radius)
-                    {
-                        listPoints.Add(point);
-                        listedPoints.Remove(point);
-                    }
+                    center = position
+                };
+                var listPoints = new List<Vector2>();
+                Vector2 offset = Vector2.one;
+                offset *= radius;
+                for (int i = 0; i <360 ; i++)
+                {
+                    listPoints.Add(MathExtensions.RotateNew(offset, i) + position);
+                    currentBounds.Encapsulate(listPoints[^1]);
                 }
                 var parameters = new Triangulation2DParameters();
                 parameters.Points = listPoints.Select(c=>(Vector3)c).ToArray();
-                Holes.Add(parameters.Points);
-                //parameters.Boundary = shape.Boundary;
-                //parameters.Holes = shape.Holes;
+                // foreach (var hole in Holes)
+                // {
+                //     if (hole.Item2.Intersects(currentBounds))
+                //     {
+                //         
+                //     }
+                // }
+                Holes.Add((parameters.Points, currentBounds));
                 parameters.Side = Side.Back;
                 parameters.Delaunay = true;
 
@@ -506,8 +536,9 @@ namespace IceCracks.Utilities
             public Geometry GetBase()
             {
                 var parameters = new Triangulation2DParameters();
-                parameters.Points = listedPoints.ToArray();
-                parameters.Holes = Holes.ToArray();
+                //parameters.Points = listedPoints.ToArray();
+                parameters.Holes = Holes.Select(c => c.Item1).ToArray();
+                parameters.Boundary = CurrentBounds.Select(c => (Vector3)c).ToArray();
                 parameters.Side = Side.Back;
                 parameters.Delaunay = true;
 

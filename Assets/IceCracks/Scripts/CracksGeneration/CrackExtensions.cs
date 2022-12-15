@@ -160,9 +160,9 @@ namespace IceCracks.CracksGeneration.Extensions
         public const float TOKEN_DEBUG_INITIAL_CRACK_FORCE = 40f;
 
         public const float TOKEN_DEFAULT_CORE_FORCE_VALUE = 5f;
-        public const int TOKEN_DEFAULT_MIN_SECTORS_COUNT = 9;
-        public const int TOKEN_DEFAULT_MAX_SECTORS_COUNT = 12;
-        public const float TOKEN_DEFAULT_CORE_CIRCLE_RADIUS = 60f;
+        public const int TOKEN_DEFAULT_MIN_SECTORS_COUNT = 10;
+        public const int TOKEN_DEFAULT_MAX_SECTORS_COUNT = 20;
+        public const float TOKEN_DEFAULT_CORE_CIRCLE_RADIUS = 90f;
         //TODO: feature forLater
         //public const float TOKEN_DEFAULT_CORE_SPLIT_RADIUS = 20f;
         public const float TOKEN_DEFAULT_SECTOR_FRAGMENT_LENGTH = 15f;

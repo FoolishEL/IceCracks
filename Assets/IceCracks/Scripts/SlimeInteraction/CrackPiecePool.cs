@@ -40,8 +40,8 @@ namespace IceCracks.CracksGeneration
                     c.gameObject.SetActive(true);
                     c.transform.position = transform.position;
                     c.transform.rotation = Quaternion.identity;
-                    c.transform.GetChild(0).localEulerAngles =
-                        new Vector3(Random.Range(-35f, 35f), Random.Range(-35f, 35f), 0);
+                    // c.transform.GetChild(0).localEulerAngles =
+                    //     new Vector3(Random.Range(-35f, 35f), Random.Range(-35f, 35f), 0);
                 },
                 (c) => c.gameObject.SetActive(false),
                 null, true, 10, maxSize
