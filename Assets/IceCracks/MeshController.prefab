@@ -45,6 +45,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefab: {fileID: 6557159064019882740, guid: 6d42b1db540204aa2993d04b26762d5b, type: 3}
+  maxSize: 120
 --- !u!1 &3773108082109335469
 GameObject:
   m_ObjectHideFlags: 0
@@ -94,7 +95,7 @@ MonoBehaviour:
   prefab: {fileID: 343216886321660919, guid: 9cd69d56276a44e079737633452de3ac, type: 3}
   size: {x: 10, y: 10}
   raycastCamera: {fileID: 0}
-  splitCountByDepth: 0a0000000a000000
+  splitCountByDepth: 080000000a000000
 --- !u!1 &6092880545439084352
 GameObject:
   m_ObjectHideFlags: 0

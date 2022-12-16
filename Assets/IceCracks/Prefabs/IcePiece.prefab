@@ -49,6 +49,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   meshFilter: {fileID: 8236344073782823197}
   meshRenderer: {fileID: 5546611183523592528}
+  iceCrackSwimming: {fileID: 4500019155748271640}
 --- !u!114 &8952355147967137095
 MonoBehaviour:
   m_ObjectHideFlags: 0

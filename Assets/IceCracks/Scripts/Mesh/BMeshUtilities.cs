@@ -221,6 +221,7 @@ namespace IceCracks.Utilities
             BMeshOperators.Merge(mesh, third);
             return mesh;
         }
+        
 
         private static BMesh.Vertex AddVertexToMesh(float x, float y, BMesh bMesh, Vector2 size, float height = 0f)
         {
@@ -240,21 +241,19 @@ namespace IceCracks.Utilities
             private readonly int splitCount;
             private readonly int maxDepth;
             private readonly int currentDepth;
+            private Vector2Int startPosition, endPosition;
+            private Vector2Int currentId;
+            private HyperSpace parent, left, right, up, down;
 
             private bool isEmpty;
             private bool isCut;
-            private HyperSpace[,] subSpaces;
             private List<HyperSpace> listedSubSpaces;
-            // private List<Bounds> emptyBy;
-            // private List<Bounds> cutBy;
 
             private BMesh cachedBMesh;
             private bool isCorner;
 
-            private float cachedSquare;
-
             public HyperSpace(Vector2 size, Vector2 boundsCenter, Vector2 boundsSize, int maxDepth,
-                int currentDepth)
+                int currentDepth,Vector2Int startPosition,Vector2Int endPosition)
             {
                 this.size = size;
                 splitCount = SplitMeshController.SplitAmounts.Count - 1 > currentDepth
@@ -263,8 +262,6 @@ namespace IceCracks.Utilities
                 this.maxDepth = maxDepth;
                 this.currentDepth = currentDepth;
                 isCorner = false;
-                // emptyBy = new List<Bounds>();
-                // cutBy = new List<Bounds>();
                 isEmpty = false;
                 isCut = false;
                 mainSquare = new Bounds
@@ -272,47 +269,65 @@ namespace IceCracks.Utilities
                     center = boundsCenter,
                     size = boundsSize
                 };
-                if (currentDepth == maxDepth)
-                    cachedSquare = GetRawSquare();
-                else
-                    cachedSquare = -1f;
-                
-                if (currentDepth == 0)
+                this.startPosition = startPosition;
+                this.endPosition = endPosition;
+                if(maxDepth ==currentDepth)
+                    if (endPosition - startPosition == Vector2Int.one)
+                    {
+                        this.endPosition = startPosition;
+                    }
+
+                if (currentDepth <maxDepth)
                 {
                     GenerateSubSpaces();
                 }
+
+                if (currentDepth == 0)
+                {
+                    UniteSmallest();
+                }
             }
 
-            public float GetRawSquare() => mainSquare.extents.magnitude;
-
-            public float GetSquare()
+            private void UniteSmallest()
             {
-                if (cachedSquare > 0f)
-                    return cachedSquare;
-                if (isEmpty)
+                if (currentDepth == maxDepth)
                 {
-                    cachedSquare = 0f;
-                    return 0f;
+                    return;
                 }
 
-                if (isCut)
+                if (left is not null)
                 {
-                    cachedSquare = 0f;
-                    foreach (var item in subSpaces)
+                    for (int i = 0; i < splitCount; i++)
                     {
-                        if (item.isEmpty)
-                            continue;
-                        cachedSquare += item.GetSquare();
+                        listedSubSpaces[i * splitCount].left = left.listedSubSpaces[i * splitCount + splitCount - 1];
                     }
                 }
-                else
+                if (right is not null)
                 {
-                    cachedSquare = GetRawSquare();
+                    for (int i = 0; i < splitCount; i++)
+                    {
+                        listedSubSpaces[i * splitCount + splitCount - 1].right =
+                            right.listedSubSpaces[i * splitCount];
+                    }
                 }
-                return cachedSquare;
+                if (up is not null)
+                {
+                    for (int i = 0; i < splitCount; i++)
+                    {
+                        listedSubSpaces[(splitCount - 1) * splitCount + i].up =
+                            up.listedSubSpaces[i];
+                    }
+                }
+                if (down is not null)
+                {
+                    for (int i = 0; i < splitCount; i++)
+                    {
+                        listedSubSpaces[i].down =
+                            down.listedSubSpaces[splitCount * (splitCount - 1) + i];
+                    }
+                }
+                listedSubSpaces.ForEach(c => c.UniteSmallest());
             }
-
-            public Vector3 GetMainSquarePosition() => mainSquare.center;
 
             public async Task CutOut(Bounds rectangleOrdinary,List<HyperSpace>onEdge)
             {
@@ -332,62 +347,21 @@ namespace IceCracks.Utilities
                             return;
                         }
                     }
-                    //empty.Add(this);
-                    //emptyBy.Add(rectangleOrdinary);
                     cachedBMesh = null;
                     isEmpty = true;
                     return;
                 }
 
                 cachedBMesh = null;
-                if (subSpaces is null)
-                    GenerateSubSpaces();
+                // if (listedSubSpaces is null || listedSubSpaces.Count == 0)
+                //     GenerateSubSpaces();
                 isCut = true;
-                cachedSquare = -1f;
-                //cutBy.Add(rectangleOrdinary);
                 int emptinessCount = 0;
-                //await Task.WhenAll(listedSubSpaces.Select(c => c.CutOut(rectangle)));
+                await Task.WhenAll(listedSubSpaces.Select(c => c.CutOut(rectangleOrdinary, onEdge)));
 
-                #region unuptimized
-
-                for (int i = 0; i < splitCount; i++)
-                {
-                    for (int j = 0; j < splitCount; j++)
-                    {
-                        var hspace = subSpaces[i, j];
-                        await hspace.CutOut(rectangleOrdinary, onEdge);
-                        if (hspace.isEmpty)
-                            emptinessCount++;
-                    }
-                }
-
-                /*
-                foreach (var hspace in subSpaces)
-                {
-                    await Task.Yield();
-                    await hspace.CutOut(rectangle);
-                    if (hspace.isEmpty)
-                    {
-                        emptinessCount++;
-                        Debug.LogError($"Cutted out {}");
-                    }
-                }
-                */
-
-                #endregion
-
-                //emptinessCount = listedSubSpaces.Count(c => c.isEmpty);
+                emptinessCount = listedSubSpaces.Count(c => c.isEmpty);
                 if (emptinessCount == splitCount * splitCount)
                 {
-                    // if (cutBy.Count > 1)
-                    // {
-                    //     emptyBy.AddRange(cutBy);
-                    // }
-                    // else
-                    // {
-                    //     emptyBy.Add(rectangleOrdinary);
-                    // }
-
                     isEmpty = true;
                     cachedBMesh = null;
                 }
@@ -399,13 +373,6 @@ namespace IceCracks.Utilities
                 {
                     return;
                 }
-                // if (currentDepth >= maxDepth Vector2.Distance(mainSquare.center, bounds.center) > bounds.size.magnitude*.4f)
-                // {
-                //     meshes.Add(GetBMesh());
-                //     cachedBMesh = null;
-                //     isEmpty = true;
-                //     return;
-                // }
 
                 if (currentDepth >= maxDepth ||
                     (bounds.Contains(mainSquare.max) && bounds.Contains(mainSquare.min))) 
@@ -417,29 +384,12 @@ namespace IceCracks.Utilities
                 }
 
                 cachedBMesh = null;
-                if (subSpaces is null)
+                if (listedSubSpaces is null || listedSubSpaces.Count == 0)
                     GenerateSubSpaces();
                 isCut = true;
-                cachedSquare = -1f;
-                //cutBy.Add(rectangleOrdinary);
                 int emptinessCount = 0;
-                //await Task.WhenAll(listedSubSpaces.Select(c => c.CutOut(rectangle)));
-
-                #region unuptimized
-
-                for (int i = 0; i < splitCount; i++)
-                {
-                    for (int j = 0; j < splitCount; j++)
-                    {
-                        var hspace = subSpaces[i, j];
-                        await hspace.GetAll(bounds, meshes);
-                        if (hspace.isEmpty)
-                            emptinessCount++;
-                    }
-                }
-
-                #endregion
-                
+                await Task.WhenAll(listedSubSpaces.Select(c => c.GetAll(bounds, meshes)));
+                emptinessCount = listedSubSpaces.Count(c => c.isEmpty);
                 if (emptinessCount == splitCount * splitCount)
                 {
                     isEmpty = true;
@@ -489,33 +439,52 @@ namespace IceCracks.Utilities
                     {
                     }
                 }
-
+                
                 for (int i = 0; i <= additive.x; i++)
                 {
                     for (int j = 0; j <= additive.y; j++)
                     {
                         if(matrix[i,j]is null)
                             continue;
+                        var hSpace = matrix[i, j];
+                        List<Vector2> points = new List<Vector2>();
                         if (i + 1 != additive.x + 1 && j + 1 != additive.y + 1)
                         {
                             if (matrix[i + 1, j] is null && matrix[i, j + 1] is null)
                             {
-                                var hSpace = matrix[i, j];
-                                List<Vector2> points = new List<Vector2>();
+                                points.Clear();
                                 points.Add(new Vector2(hSpace.mainSquare.max.x, hSpace.mainSquare.min.y));
                                 points.Add(new Vector2(hSpace.mainSquare.min.x, hSpace.mainSquare.max.y));
                                 points.Add(hSpace.mainSquare.max);
                                 hSpace.cachedBMesh = CreateMeshFromPoints(points, hSpace.mainSquare.center,
                                     hSpace.size);
+                                /*
+                                float down = -.2f;
+                                Vector2 center = Vector2.zero;
+                                foreach (var p in points)
+                                {
+                                    center += p;
+                                }
 
+                                center /= points.Count;
+
+                                BMesh first = new BMesh();
+                                first.AddVertexAttribute("uv", BMesh.AttributeBaseType.Float, 2);
+                                var vertices = new List<BMesh.Vertex>();
+                                vertices.Add(AddVertexToMesh(points[0].x, points[0].y, first, hSpace.size));
+                                vertices.Add(AddVertexToMesh(points[1].x, points[1].y, first, hSpace.size));
+                                vertices.Add(AddVertexToMesh(points[1].x+(points[1]-center).x, points[1].y+((points[1]-center)).y, first, hSpace.size,down));
+                                vertices.Add(AddVertexToMesh(points[0].x+((points[0]-center)).x, points[0].y+((points[0]-center)).y, first, hSpace.size,down));
+                                first.AddFace(vertices.ToArray());
+                                BMeshOperators.Merge(hSpace.cachedBMesh, first);
+                                */
                             }
                         }
                         if (i - 1 != -1 && j + 1 != additive.y + 1)
                         {
                             if (matrix[i - 1, j] is null && matrix[i, j + 1] is null)
                             {
-                                var hSpace = matrix[i, j];
-                                List<Vector2> points = new List<Vector2>();
+                                points.Clear();
                                 points.Add(hSpace.mainSquare.max);
                                 points.Add(hSpace.mainSquare.min);
                                 points.Add(new Vector2(hSpace.mainSquare.min.x, hSpace.mainSquare.max.y));
@@ -527,9 +496,8 @@ namespace IceCracks.Utilities
                         if (i + 1 != additive.x + 1 && j - 1 != -1)
                         {
                             if (matrix[i + 1, j] is null && matrix[i, j - 1] is null)
-                            {
-                                var hSpace = matrix[i, j];
-                                List<Vector2> points = new List<Vector2>();
+                            { 
+                                points.Clear();
                                 points.Add(hSpace.mainSquare.max);
                                 points.Add(new Vector2(hSpace.mainSquare.max.x, hSpace.mainSquare.min.y));
                                 points.Add(hSpace.mainSquare.min);
@@ -542,8 +510,7 @@ namespace IceCracks.Utilities
                         {
                             if (matrix[i - 1, j] is null && matrix[i, j - 1] is null)
                             {
-                                var hSpace = matrix[i, j];
-                                List<Vector2> points = new List<Vector2>();
+                                points.Clear();
                                 points.Add(new Vector2(hSpace.mainSquare.max.x, hSpace.mainSquare.min.y));
                                 points.Add(hSpace.mainSquare.min);
                                 points.Add(new Vector2(hSpace.mainSquare.min.x, hSpace.mainSquare.max.y));
@@ -554,14 +521,13 @@ namespace IceCracks.Utilities
                         }
                     }
                 }
+                
             }
 
             public BMesh GetBMesh(bool skipFirst = false)
             {
-                if (isEmpty&&!skipFirst)
-                {
+                if (isEmpty && !skipFirst)
                     return null;
-                }
 
                 if (cachedBMesh != null)
                     return cachedBMesh;
@@ -575,180 +541,104 @@ namespace IceCracks.Utilities
                 if (isCut && (!isEmpty || skipFirst))
                 {
                     List<BMesh> bMeshes = new List<BMesh>();
-                    for (int i = 0; i < splitCount; i++)
+                    foreach (var hSpace  in listedSubSpaces)
                     {
-                        for (int j = 0; j < splitCount; j++)
+                        if (hSpace.isEmpty)
                         {
-                            var hspace = subSpaces[i, j];
-                            if (hspace.isEmpty)
-                            {
-                                continue;
-                            }
-
-                            var mesh = hspace.GetBMesh();
-                            if (mesh != null)
-                                bMeshes.Add(mesh);
-                        }
-                    }
-
-                    /*
-                    foreach (var subSpace in subSpaces)
-                    {
-                        if (subSpace.isEmpty)
                             continue;
-                        var mesh = subSpace.GetBMesh();
+                        }
+
+                        var mesh = hSpace.GetBMesh();
                         if (mesh != null)
                             bMeshes.Add(mesh);
                     }
-                    */
-
                     cachedBMesh = bMeshes[0].Copy();
                     if (bMeshes.Count > 1)
                     {
                         for (int i = 1; i < bMeshes.Count; i++)
-                        {
                             BMeshOperators.Merge(cachedBMesh, bMeshes[i]);
-                        }
                     }
                     else
-                    {
                         BMeshOperators.Merge(cachedBMesh, bMeshes[0]);
-                    }
                 }
                 else
                 {
-                    cachedBMesh = isEmpty ? null : CreateQuadMesh(size, mainSquare.max, mainSquare.min);
+                    if (maxDepth == currentDepth)
+                    {
+
+                    }
+                    else
+                    {
+                        cachedBMesh = isEmpty ? null : CreateQuadMesh(size, mainSquare.max, mainSquare.min);
+                    }
                 }
             }
 
             private void GenerateSubSpaces()
             {
-                subSpaces = new HyperSpace[splitCount, splitCount];
                 listedSubSpaces = new List<HyperSpace>();
                 Vector2 boundsSize = mainSquare.size / splitCount;
                 float currentX = 0f;
                 float currentY = 0f;
+                int currentStep = (endPosition.x - startPosition.x + 1) / splitCount;
                 Vector2 startBottomLeft = (Vector2)mainSquare.min + boundsSize / 2;
+                
                 for (int i = 0; i < splitCount; i++)
                 {
                     for (int j = 0; j < splitCount; j++)
                     {
-                        subSpaces[i, j] = new HyperSpace(size,
-                            startBottomLeft + Vector2.right * currentX + Vector2.up * currentY,
-                            boundsSize,
-                            maxDepth,
-                            currentDepth + 1);
-                        listedSubSpaces.Add(subSpaces[i, j]);
+                        Vector2Int startPos = startPosition + Vector2Int.up * i * currentStep
+                                                            + Vector2Int.right * j * currentStep;
+                        listedSubSpaces.Add(
+                            new HyperSpace(size,
+                                startBottomLeft + Vector2.right * currentX + Vector2.up * currentY,
+                                boundsSize,
+                                maxDepth,
+                                currentDepth + 1, startPos, startPos + Vector2Int.one * currentStep)
+                        );
+                        listedSubSpaces[^1].parent = this;
+                        listedSubSpaces[^1].currentId = new Vector2Int(i, j);
                         currentY += boundsSize.y;
                     }
-
+                    
                     currentY = 0f;
                     currentX += boundsSize.x;
                 }
-            }
 
-            public void SplitBySquare(float minSquare, List<HyperSpace> result, int level)
-            {
-                if (!isCut || isEmpty)
-                    return;
-                if (currentDepth < level)
+                int GetId(int i, int j)
                 {
-                    foreach (var item in subSpaces)
-                    {
-                        item.SplitBySquare(minSquare, result, level);
-                    }
+                    return i * splitCount + j;
                 }
-                else
+                
+                for (int i = 0; i < splitCount - 1; i++)
                 {
-                    if (currentDepth == level)
+                    for (int j = 0; j < splitCount - 1; j++)
                     {
-                        var currentSquare = GetSquare();
-                        if (currentSquare < minSquare && MathExtensions.GetRandomWithPercent(.5f))
-                        {
-                            result.Add(this);
-                            isEmpty = true;
-                        }
+                        listedSubSpaces[GetId(i, j)].right = listedSubSpaces[GetId(i, j + 1)];
+                        listedSubSpaces[GetId(i, j + 1)].left = listedSubSpaces[GetId(i, j)];
+                        listedSubSpaces[GetId(i, j)].up = listedSubSpaces[GetId(i + 1, j)];
+                        listedSubSpaces[GetId(i + 1, j)].down = listedSubSpaces[GetId(i, j)];
                     }
+
+                    listedSubSpaces[GetId(i, splitCount - 1)].up =
+                        listedSubSpaces[GetId(i + 1, splitCount - 1)];
+                    listedSubSpaces[GetId(i + 1, splitCount - 1)].down =
+                        listedSubSpaces[GetId(i, splitCount - 1)];
+
+                    listedSubSpaces[GetId(splitCount - 1, i)].right =
+                        listedSubSpaces[GetId(splitCount - 1, i + 1)];
+                    listedSubSpaces[GetId(splitCount - 1, i + 1)].left =
+                        listedSubSpaces[GetId(splitCount - 1, i)];
                 }
+
+                listedSubSpaces[^1].left = listedSubSpaces[^2];
+                listedSubSpaces[^2].right = listedSubSpaces[^1];
+                listedSubSpaces[^1].down = listedSubSpaces[GetId(splitCount - 2, splitCount - 1)];
+                listedSubSpaces[GetId(splitCount - 2, splitCount - 1)].up = listedSubSpaces[^1];
+
             }
         }
-        
-        /*
-        public class GridOfPoints
-        {
-            private List<Vector2> CurrentBounds;
-            private List<(Vector3[],Bounds)> Holes;
 
-            public GridOfPoints()
-            {
-                CurrentBounds = new List<Vector2>();
-                Holes = new List<(Vector3[],Bounds)>();
-                float stepLength = .1f;
-                List<Vector2> steps = new List<Vector2>()
-                {
-                    Vector2.up, Vector2.right, Vector2.down, Vector2.left
-                };
-                Vector2 initialPos = Vector2.one * -.5f;
-                for (int i = 0; i < 4; i++)
-                {
-                    var currentStep = steps[i];
-                    currentStep *= stepLength;
-                    for (int j = 0; j < (2f / stepLength); j++)
-                    {
-                        CurrentBounds.Add(initialPos);
-                        initialPos += currentStep;
-                    }
-                }
-            }
-
-            public Geometry MakeHoleCircle(Vector2 position,float radius)
-            {
-                Bounds currentBounds = new Bounds
-                {
-                    center = position
-                };
-                var listPoints = new List<Vector2>();
-                Vector2 offset = Vector2.one;
-                offset *= radius;
-                for (int i = 0; i <360 ; i++)
-                {
-                    listPoints.Add(MathExtensions.RotateNew(offset, i) + position);
-                    currentBounds.Encapsulate(listPoints[^1]);
-                }
-                var parameters = new Triangulation2DParameters();
-                parameters.Points = listPoints.Select(c=>(Vector3)c).ToArray();
-                // foreach (var hole in Holes)
-                // {
-                //     if (hole.Item2.Intersects(currentBounds))
-                //     {
-                //         
-                //     }
-                // }
-                Holes.Add((parameters.Points, currentBounds));
-                parameters.Side = Side.Back;
-                parameters.Delaunay = true;
-
-                var triangulationAPI = new TriangulationAPI();
-                var result = triangulationAPI.Triangulate2DRaw(parameters);
-                return result;
-                var mesh = triangulationAPI.Triangulate2D(parameters);
-            }
-
-            public Geometry GetBase()
-            {
-                var parameters = new Triangulation2DParameters();
-                //parameters.Points = listedPoints.ToArray();
-                parameters.Holes = Holes.Select(c => c.Item1).ToArray();
-                parameters.Boundary = CurrentBounds.Select(c => (Vector3)c).ToArray();
-                parameters.Side = Side.Back;
-                parameters.Delaunay = true;
-
-                var triangulationAPI = new TriangulationAPI();
-                return triangulationAPI.Triangulate2DRaw(parameters);
-            }
-        }
-        */
-        
         public static Texture2D CopyTexture(Texture2D original)
         {
             Texture2D copyTexture = new Texture2D(original.width, original.height);

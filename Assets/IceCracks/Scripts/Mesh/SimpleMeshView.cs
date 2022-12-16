@@ -2,10 +2,13 @@ using UnityEngine;
 
 namespace IceCracks.Views
 {
+    using Interactions;
     public class SimpleMeshView : MonoBehaviour
     {
         [SerializeField] protected MeshFilter meshFilter;
         [SerializeField] protected MeshRenderer meshRenderer;
+        [SerializeField] private IceCrackSwimming iceCrackSwimming;
+        public IceCrackSwimming IceCrackSwimming => iceCrackSwimming;
 
         protected virtual void Reset() => meshFilter = GetComponent<MeshFilter>();
 

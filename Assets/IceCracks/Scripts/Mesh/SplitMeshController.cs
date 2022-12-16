@@ -43,8 +43,14 @@ namespace IceCracks.CracksGeneration
             //TODO: what is 2 means? parametrize this! 
             splitAmounts = new List<int>();
             splitAmounts.AddRange(splitCountByDepth);
+            int summ = 1;
+            foreach (var split in splitCountByDepth)
+            {
+                summ *= split;
+            }
 
-            return new HyperSpace(size, Vector2.zero, Vector2.one * 2, splitCountByDepth.Count, 0);
+            return new HyperSpace(size, Vector2.zero, Vector2.one * 2, splitCountByDepth.Count, 0,
+                Vector2Int.one, Vector2Int.one * summ);
         }
 
         public static IReadOnlyList<int> SplitAmounts => splitAmounts;

@@ -1,6 +1,10 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Pet.Slime;
 using UnityEngine;
+using Random = System.Random;
 
 namespace IceCracks.CracksGeneration.Models
 {
@@ -60,6 +64,7 @@ namespace IceCracks.CracksGeneration.Models
         {
             var bMeshes = new List<BMesh>();
             currentData.GetAll(obj, bMeshes);
+            bMeshes = bMeshes.Where(c => c is not null).ToList();
             if(bMeshes.Count==0)
                 return;
             var first = bMeshes[0];
@@ -81,6 +86,12 @@ namespace IceCracks.CracksGeneration.Models
             swimmingObj.offset = obj.center * -5f + Vector3.forward;
             swimmingObj.size = obj.size.magnitude;
             swimmingObj.numberOfVertex = GetClosestVertexId(position);
+
+            obj.size *= 1.2f;
+            onEdge.Clear();
+            currentData.CutOut(obj, onEdge);
+            HyperSpace.AdjustBorders(onEdge);
+            onEdge.Clear();
         }
         private async void CutOffPieces(List<BMesh> bMesh,List<Bounds>bounds,Bounds obj)
         {
@@ -88,13 +99,12 @@ namespace IceCracks.CracksGeneration.Models
             isNewMesh = false;
             cachedBMesh = bMesh;
             isGenerated = false;
-            meshCrackGenerator.SetBusyStatus(this);
             onEdge.Clear();
             await currentData.CutOut(obj, onEdge);
             HyperSpace.AdjustBorders(onEdge);
             onEdge.Clear();
 
-            currentData.SplitBySquare(currentData.GetRawSquare() * .15f, onEdge, 2);
+            //currentData.SplitBySquare(currentData.GetRawSquare() * .15f, onEdge, 2);
             lastBoundCut = obj;
             isGenerated = true;
             if (meshCrackVisualizer.IsDrawn)
@@ -103,48 +113,36 @@ namespace IceCracks.CracksGeneration.Models
             }
         }
 
-        private void ReCreateBounds()
+        private async void ReCreateBounds()
         {
             SimpleMeshView item;
             Vector2 position;
             IceCrackSwimming swimmingObj;
-            for (int i = 0; i < cachedBMesh.Count; i++)
-            {
-                item = CrackPiecePool.Instance.GetView();
-                lastBoundCut = bounds[i];
-                position = lastBoundCut.center;
-                position = MathExtensions.Rebase(position, -Vector2.one, Vector2.one, -Vector2.one * 5, Vector2.one * 5);
-                lastBoundCut.extents *= .98f;
-                item.SetMesh(cachedBMesh[i]);
-                item.GetMeshRenderer().materials = new[] { Instantiate(meshCrackVisualizer.currentMaterial) };
-                item.CacheTexture(meshCrackVisualizer.GetCurrentTextureCopy());
-            
-                swimmingObj = item.gameObject.GetComponent<IceCrackSwimming>();
-                swimmingObj.offset = lastBoundCut.center * -5f + Vector3.forward;
-                swimmingObj.size = lastBoundCut.size.magnitude;
-                swimmingObj.numberOfVertex = GetClosestVertexId(position);
-            }
-
-            // if (onEdge.Count > 0)
-            // {
-            //     foreach (var hS in onEdge)
-            //     {
-            //         item = CrackPiecePool.Instance.GetView();
-            //         position = hS.GetMainSquarePosition();
-            //         position = MathExtensions.Rebase(position, -Vector2.one, Vector2.one, -Vector2.one * 5, Vector2.one * 5);
-            //         item.SetMesh(hS.GetBMesh(true));
-            //         item.GetMeshRenderer().materials = new[] { Instantiate(meshCrackVisualizer.currentMaterial) };
-            //         item.CacheTexture(meshCrackVisualizer.GetCurrentTextureCopy());
-            //
-            //         swimmingObj = item.gameObject.GetComponent<IceCrackSwimming>();
-            //         swimmingObj.size = hS.GetRawSquare();
-            //         swimmingObj.offset = hS.GetMainSquarePosition() * -5f + Vector3.forward;
-            //         swimmingObj.numberOfVertex = GetClosestVertexId(position);
-            //     }
-            //     onEdge.Clear();
-            // }
+            List<SimpleMeshView> items = new List<SimpleMeshView>();
+            cachedBMesh.ForEach(_=>items.Add(CrackPiecePool.Instance.GetView()));
+            await Task.Yield();
+            Material mat = Instantiate(meshCrackVisualizer.currentMaterial);
+            await Task.WhenAny(cachedBMesh.Select((c, i) => SetCachedBMesh(c, bounds[i], mat)));
             meshCrackGenerator.UnsetBusyStatus(this);
         }
+
+        private async Task SetCachedBMesh(BMesh mesh,Bounds bounds,Material mat)
+        {
+            SimpleMeshView item = CrackPiecePool.Instance.GetView();
+            lastBoundCut = bounds;
+            Vector2 position = lastBoundCut.center;
+            position = MathExtensions.Rebase(position, -Vector2.one, Vector2.one, -Vector2.one * 5, Vector2.one * 5);
+            lastBoundCut.extents *= .98f;
+            item.SetMesh(mesh);
+            item.GetMeshRenderer().materials = new[] { mat };
+            item.CacheTexture(meshCrackVisualizer.GetCurrentTextureCopy());
+
+            IceCrackSwimming swimmingObj = item.IceCrackSwimming;
+            swimmingObj.offset = lastBoundCut.center * -5f + Vector3.forward;
+            swimmingObj.size = lastBoundCut.size.magnitude;
+            swimmingObj.numberOfVertex = GetClosestVertexId(position);
+        }
+        
 
         private int GetClosestVertexId(Vector3 position)
         {
