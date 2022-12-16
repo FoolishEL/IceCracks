@@ -120,6 +120,7 @@ namespace IceCracks.CracksGeneration.Models
             IceCrackSwimming swimmingObj;
             List<SimpleMeshView> items = new List<SimpleMeshView>();
             cachedBMesh.ForEach(_=>items.Add(CrackPiecePool.Instance.GetView()));
+
             await Task.Yield();
             Material mat = Instantiate(meshCrackVisualizer.currentMaterial);
             await Task.WhenAny(cachedBMesh.Select((c, i) => SetCachedBMesh(c, bounds[i], mat)));

@@ -4,11 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using IceCracks.CracksGeneration.Extensions;
 using IceCracks.Math;
-using Jobberwocky.GeometryAlgorithms.Source.API;
-using Jobberwocky.GeometryAlgorithms.Source.Core;
-using Jobberwocky.GeometryAlgorithms.Source.Parameters;
 using UnityEngine;
-using Random = System.Random;
 
 namespace IceCracks.Utilities
 {
@@ -250,7 +246,6 @@ namespace IceCracks.Utilities
             private List<HyperSpace> listedSubSpaces;
 
             private BMesh cachedBMesh;
-            private bool isCorner;
 
             public HyperSpace(Vector2 size, Vector2 boundsCenter, Vector2 boundsSize, int maxDepth,
                 int currentDepth,Vector2Int startPosition,Vector2Int endPosition)
@@ -261,7 +256,6 @@ namespace IceCracks.Utilities
                     : SplitMeshController.SplitAmounts[0];
                 this.maxDepth = maxDepth;
                 this.currentDepth = currentDepth;
-                isCorner = false;
                 isEmpty = false;
                 isCut = false;
                 mainSquare = new Bounds
@@ -369,14 +363,55 @@ namespace IceCracks.Utilities
 
             public async Task GetAll(Bounds bounds,List<BMesh> meshes)
             {
+                bool GetStatusConnected(HyperSpace space)
+                {
+                    return left == null || left.isEmpty || !left.mainSquare.Intersects(bounds);
+                }
                 if (!mainSquare.Intersects(bounds)||isEmpty)
                 {
                     return;
                 }
 
                 if (currentDepth >= maxDepth ||
-                    (bounds.Contains(mainSquare.max) && bounds.Contains(mainSquare.min))) 
+                    (bounds.Contains(mainSquare.max) && bounds.Contains(mainSquare.min)))
                 {
+                    if (GetStatusConnected(left) && GetStatusConnected(up))
+                    {
+                        meshes.Add(CreateMeshFromPoints(
+                            new List<Vector2>()
+                                { mainSquare.min, mainSquare.max, new Vector2(mainSquare.max.x, mainSquare.min.y) },
+                            mainSquare.center, size));
+                        cachedBMesh = null;
+                        isEmpty = true;
+                    }
+                    if (GetStatusConnected(left) && GetStatusConnected(down))
+                    {
+                        meshes.Add(CreateMeshFromPoints(
+                            new List<Vector2>()
+                                { mainSquare.min, mainSquare.max, new Vector2(mainSquare.max.x, mainSquare.min.y) },
+                            mainSquare.center, size));
+                        cachedBMesh = null;
+                        isEmpty = true;
+                    }
+                    if (GetStatusConnected(right) && GetStatusConnected(up))
+                    {
+                        meshes.Add(CreateMeshFromPoints(
+                            new List<Vector2>()
+                                { mainSquare.min, mainSquare.max, new Vector2(mainSquare.max.x, mainSquare.min.y) },
+                            mainSquare.center, size));
+                        cachedBMesh = null;
+                        isEmpty = true;
+                    }
+                    if (GetStatusConnected(right) && GetStatusConnected(down))
+                    {
+                        meshes.Add(CreateMeshFromPoints(
+                            new List<Vector2>()
+                                { mainSquare.min, mainSquare.max, new Vector2(mainSquare.max.x, mainSquare.min.y) },
+                            mainSquare.center, size));
+                        cachedBMesh = null;
+                        isEmpty = true;
+                    }
+
                     meshes.Add(GetBMesh());
                     cachedBMesh = null;
                     isEmpty = true;
@@ -395,7 +430,6 @@ namespace IceCracks.Utilities
                     isEmpty = true;
                     cachedBMesh = null;
                 }
-                
             }
 
             public static void AdjustBorders(List<HyperSpace> edges)
@@ -563,14 +597,8 @@ namespace IceCracks.Utilities
                 }
                 else
                 {
-                    if (maxDepth == currentDepth)
-                    {
+                    cachedBMesh = isEmpty ? null : CreateQuadMesh(size, mainSquare.max, mainSquare.min);
 
-                    }
-                    else
-                    {
-                        cachedBMesh = isEmpty ? null : CreateQuadMesh(size, mainSquare.max, mainSquare.min);
-                    }
                 }
             }
 
