@@ -6911,14 +6911,14 @@ MonoBehaviour:
   updateAnchors: 1
   mColor: {r: 1, g: 1, b: 1, a: 1}
   mPivot: 4
-  mWidth: 500
+  mWidth: 562
   mHeight: 1000
   mDepth: 0
   mMat: {fileID: 0}
   autoResizeBoxCollider: 0
   hideIfOffScreen: 0
   keepAspectRatio: 0
-  aspectRatio: 0.5
+  aspectRatio: 0.562
 --- !u!1 &1500745234 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 891884bc90d64b647aa0aa05430029d8, type: 3}
@@ -7468,7 +7468,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4137965362776634251, guid: 2771a4caaa655754d8e1bd6fc69d3710, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 204
+      value: 235
       objectReference: {fileID: 0}
     - target: {fileID: 4137965362776634251, guid: 2771a4caaa655754d8e1bd6fc69d3710, type: 3}
       propertyPath: m_LocalPosition.y
@@ -7477,6 +7477,7 @@ PrefabInstance:
     m_RemovedComponents:
     - {fileID: 4137965361559987101, guid: 2771a4caaa655754d8e1bd6fc69d3710, type: 3}
     - {fileID: 4137965362776634245, guid: 2771a4caaa655754d8e1bd6fc69d3710, type: 3}
+    - {fileID: 4137965362302283327, guid: 2771a4caaa655754d8e1bd6fc69d3710, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 2771a4caaa655754d8e1bd6fc69d3710, type: 3}
 --- !u!1 &1715313801 stripped
 GameObject:
@@ -8252,18 +8253,6 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1112640992}
     - target: {fileID: 3773108082109335468, guid: 29f9f9e3589674fe5acf895a2d892cbb, type: 3}
-      propertyPath: splitCountByDepth.Array.size
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 3773108082109335468, guid: 29f9f9e3589674fe5acf895a2d892cbb, type: 3}
-      propertyPath: splitCountByDepth.Array.data[0]
-      value: 8
-      objectReference: {fileID: 0}
-    - target: {fileID: 3773108082109335468, guid: 29f9f9e3589674fe5acf895a2d892cbb, type: 3}
-      propertyPath: splitCountByDepth.Array.data[1]
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 3773108082109335468, guid: 29f9f9e3589674fe5acf895a2d892cbb, type: 3}
       propertyPath: splitCountByDepth.Array.data[2]
       value: 2
       objectReference: {fileID: 0}
@@ -8327,5 +8316,9 @@ PrefabInstance:
       propertyPath: maxSize
       value: 300
       objectReference: {fileID: 0}
+    - target: {fileID: 4756357685480154542, guid: 29f9f9e3589674fe5acf895a2d892cbb, type: 3}
+      propertyPath: crackGameplaySettings
+      value: 
+      objectReference: {fileID: 11400000, guid: 5db054741b4ed46ddae06f0113a3413f, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 29f9f9e3589674fe5acf895a2d892cbb, type: 3}

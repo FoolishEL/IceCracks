@@ -19,11 +19,16 @@ namespace IceCracks.Views
             BMeshUnity.SetInMeshFilter(mesh, meshFilter);
         }
 
+        public void SetRawMesh(Mesh mesh)
+        {
+            meshFilter.mesh = mesh;
+        }
+
         public MeshRenderer GetMeshRenderer() => meshRenderer;
 
-        public void CacheTexture(Texture2D newTexture)
-        {
-            meshRenderer.materials[0].mainTexture = newTexture;
-        }
+        // public void CacheTexture(Texture2D newTexture)
+        // {
+        //     meshRenderer.materials[0].mainTexture = newTexture;
+        // }
     }
 }

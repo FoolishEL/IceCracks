@@ -34,7 +34,7 @@ namespace IceCracks.CracksGeneration
         {
             var piece = Instantiate(prefab);
             piece.transform.position = transform.position;
-            piece.SetupPiece(Create(), size, raycastCamera);
+            piece.SetupPiece(Create(), raycastCamera);
             lastPiece = piece;
         }
 
@@ -64,10 +64,9 @@ namespace IceCracks.CracksGeneration
                 return;
             isAppeared = false;
             MeshCrackVisualizer.OnAppear += OnMeshAppear;
-            lastPiece.Stop();
             var piece = Instantiate(prefab);
             piece.transform.position = transform.position;
-            piece.SetupPiece(Create(), size, raycastCamera);
+            piece.SetupPiece(Create(), raycastCamera);
             while (!isAppeared)
             {
                 await Task.Yield();

@@ -15,7 +15,7 @@ namespace IceCracks.Utilities
         public static BMesh CreateQuadMesh(Vector2 size, Vector2 topRightPoint, Vector2 bottomLeftPoint)
         {
             BMesh mesh = new BMesh();
-            var uv = mesh.AddVertexAttribute("uv", BMesh.AttributeBaseType.Float, 2);
+            mesh.AddVertexAttribute("uv", BMesh.AttributeBaseType.Float, 2);
 
             List<BMesh.Vertex> vertices = new List<BMesh.Vertex>();
             vertices.Add(AddVertexToMesh(topRightPoint.x, bottomLeftPoint.y, mesh, size));
@@ -29,7 +29,7 @@ namespace IceCracks.Utilities
         public static BMesh CreateMeshFromPoints(List<Vector2> points, Vector2 center,Vector2 size)
         {
             BMesh mesh = new BMesh();
-            var uv = mesh.AddVertexAttribute("uv", BMesh.AttributeBaseType.Float, 2);
+            mesh.AddVertexAttribute("uv", BMesh.AttributeBaseType.Float, 2);
             List<BMesh.Vertex> vertices = new List<BMesh.Vertex>();
             vertices.Add(AddVertexToMesh(center.x, center.y, mesh, size));
             vertices.Add(AddVertexToMesh(points[0].x, points[0].y, mesh, size));
@@ -173,7 +173,7 @@ namespace IceCracks.Utilities
         {
             float down = -.2f;
             BMesh mesh = new BMesh();
-            var uv = mesh.AddVertexAttribute("uv", BMesh.AttributeBaseType.Float, 2);
+            mesh.AddVertexAttribute("uv", BMesh.AttributeBaseType.Float, 2);
             List<BMesh.Vertex> vertices = new List<BMesh.Vertex>();
             for (int i = 0; i < points.Count; i++)
             {
@@ -195,7 +195,7 @@ namespace IceCracks.Utilities
             for (int i = 0; i < points.Count - 1; i++)
             {
                 BMesh first = new BMesh();
-                uv = first.AddVertexAttribute("uv", BMesh.AttributeBaseType.Float, 2);
+                first.AddVertexAttribute("uv", BMesh.AttributeBaseType.Float, 2);
                 vertices = new List<BMesh.Vertex>();
                 vertices.Add(AddVertexToMesh(offsetPoints[i].x, offsetPoints[i].y, first, size,down));
                 vertices.Add(AddVertexToMesh(offsetPoints[i+1].x, offsetPoints[i+1].y, first, size,down));
@@ -206,7 +206,7 @@ namespace IceCracks.Utilities
             }
 
             BMesh third = new BMesh();
-            uv = third.AddVertexAttribute("uv", BMesh.AttributeBaseType.Float, 2);
+            third.AddVertexAttribute("uv", BMesh.AttributeBaseType.Float, 2);
             vertices = new List<BMesh.Vertex>();
             vertices.Add(AddVertexToMesh(offsetPoints[^1].x, offsetPoints[^1].y, third, size,down));
             vertices.Add(AddVertexToMesh(offsetPoints[0].x, offsetPoints[0].y, third, size,down));
@@ -238,11 +238,15 @@ namespace IceCracks.Utilities
             private readonly int maxDepth;
             private readonly int currentDepth;
             private Vector2Int startPosition, endPosition;
-            private Vector2Int currentId;
-            private HyperSpace parent, left, right, up, down;
+            //private Vector2Int currentId;
+
+            private HyperSpace /*parent, */
+                left, right, up, down;
 
             private bool isEmpty;
+            private bool isTempted;
             private bool isCut;
+            private bool isCurved;
             private List<HyperSpace> listedSubSpaces;
 
             private BMesh cachedBMesh;
@@ -257,7 +261,9 @@ namespace IceCracks.Utilities
                 this.maxDepth = maxDepth;
                 this.currentDepth = currentDepth;
                 isEmpty = false;
+                isTempted = false;
                 isCut = false;
+                isCurved = false;
                 mainSquare = new Bounds
                 {
                     center = boundsCenter,
@@ -350,23 +356,21 @@ namespace IceCracks.Utilities
                 // if (listedSubSpaces is null || listedSubSpaces.Count == 0)
                 //     GenerateSubSpaces();
                 isCut = true;
-                int emptinessCount = 0;
                 await Task.WhenAll(listedSubSpaces.Select(c => c.CutOut(rectangleOrdinary, onEdge)));
-
-                emptinessCount = listedSubSpaces.Count(c => c.isEmpty);
-                if (emptinessCount == splitCount * splitCount)
+                
+                if (listedSubSpaces.Count(c => c.isEmpty) == splitCount * splitCount)
                 {
                     isEmpty = true;
                     cachedBMesh = null;
                 }
             }
 
-            public async Task GetAll(Bounds bounds,List<BMesh> meshes)
+            public async Task GetAll(Bounds bounds,List<HyperSpace> spaces)
             {
-                bool GetStatusConnected(HyperSpace space)
-                {
-                    return left == null || left.isEmpty || !left.mainSquare.Intersects(bounds);
-                }
+                // bool GetStatusConnected(HyperSpace space)
+                // {
+                //     return space == null || space.isEmpty && !space.mainSquare.Intersects(bounds);
+                // }
                 if (!mainSquare.Intersects(bounds)||isEmpty)
                 {
                     return;
@@ -375,46 +379,54 @@ namespace IceCracks.Utilities
                 if (currentDepth >= maxDepth ||
                     (bounds.Contains(mainSquare.max) && bounds.Contains(mainSquare.min)))
                 {
+                    spaces.Add(this);
+                    /*
                     if (GetStatusConnected(left) && GetStatusConnected(up))
                     {
+                        Debug.LogError("left and up");
                         meshes.Add(CreateMeshFromPoints(
                             new List<Vector2>()
                                 { mainSquare.min, mainSquare.max, new Vector2(mainSquare.max.x, mainSquare.min.y) },
                             mainSquare.center, size));
                         cachedBMesh = null;
                         isEmpty = true;
+                        return;
                     }
                     if (GetStatusConnected(left) && GetStatusConnected(down))
                     {
+                        Debug.LogError("left and down");
                         meshes.Add(CreateMeshFromPoints(
                             new List<Vector2>()
-                                { mainSquare.min, mainSquare.max, new Vector2(mainSquare.max.x, mainSquare.min.y) },
+                                { new Vector2(mainSquare.min.x, mainSquare.max.y), mainSquare.max, new Vector2(mainSquare.max.x, mainSquare.min.y) },
                             mainSquare.center, size));
                         cachedBMesh = null;
                         isEmpty = true;
+                        return;
                     }
                     if (GetStatusConnected(right) && GetStatusConnected(up))
                     {
+                        Debug.LogError("right and up");
                         meshes.Add(CreateMeshFromPoints(
                             new List<Vector2>()
                                 { mainSquare.min, mainSquare.max, new Vector2(mainSquare.max.x, mainSquare.min.y) },
                             mainSquare.center, size));
                         cachedBMesh = null;
                         isEmpty = true;
+                        return;
                     }
                     if (GetStatusConnected(right) && GetStatusConnected(down))
                     {
+                        Debug.LogError("right and down");
                         meshes.Add(CreateMeshFromPoints(
                             new List<Vector2>()
                                 { mainSquare.min, mainSquare.max, new Vector2(mainSquare.max.x, mainSquare.min.y) },
                             mainSquare.center, size));
                         cachedBMesh = null;
                         isEmpty = true;
+                        return;
                     }
-
-                    meshes.Add(GetBMesh());
-                    cachedBMesh = null;
-                    isEmpty = true;
+                    */
+                    isTempted = true;
                     return;
                 }
 
@@ -422,140 +434,138 @@ namespace IceCracks.Utilities
                 if (listedSubSpaces is null || listedSubSpaces.Count == 0)
                     GenerateSubSpaces();
                 isCut = true;
-                int emptinessCount = 0;
-                await Task.WhenAll(listedSubSpaces.Select(c => c.GetAll(bounds, meshes)));
-                emptinessCount = listedSubSpaces.Count(c => c.isEmpty);
-                if (emptinessCount == splitCount * splitCount)
+                await Task.WhenAll(listedSubSpaces.Select(c => c.GetAll(bounds, spaces)));
+                if (listedSubSpaces.Count(c => c.isEmpty || c.isTempted) == splitCount * splitCount)
                 {
                     isEmpty = true;
                     cachedBMesh = null;
                 }
             }
 
-            public static void AdjustBorders(List<HyperSpace> edges)
+            public static BMesh GetMeshFromArea(List<HyperSpace> spaces,Bounds bounds)
             {
-                if(edges is null|| edges.Count==0)
-                    return;
-                var firstEdge = edges[0];
-                List<(Vector2Int, HyperSpace)> numerating = new List<(Vector2Int, HyperSpace)>();
-                int minX = int.MaxValue, minY = int.MaxValue;
-                foreach (var edge in edges)
+                bool GetStatusConnected(HyperSpace space)
                 {
-                    Vector2 res =(firstEdge.mainSquare.center - edge.mainSquare.center);
-                    res.x /= firstEdge.mainSquare.size.x;
-                    res.y /= firstEdge.mainSquare.size.y;
-                    Vector2Int position = new Vector2Int((int)res.x, (int)res.y);
-                    if (minX > position.x)
-                        minX = position.x;
-                    if (minY > position.y)
-                        minY = position.y;
-                    numerating.Add(new(position,edge));
+                    return space == null || !space.isTempted || !space.mainSquare.Intersects(bounds);
                 }
-                Vector2Int additive = Vector2Int.zero;
-                if (minX < 0)
+
+                List<BMesh> meshes = new List<BMesh>();
+                foreach (var space in spaces)
                 {
-                    additive.x = -minX;
-                }
-                if (minY < 0)
-                {
-                    additive.y = -minY;
-                }
-                HyperSpace[,] matrix = new HyperSpace[additive.x+1, additive.y+1];
-                foreach (var item in numerating)
-                {
-                    int x = item.Item1.x + additive.x;
-                    int y = item.Item1.y + additive.y;
-                    try
+                    if (space.isCurved)
                     {
-                        matrix[x, y] = item.Item2;
+                        meshes.Add(space.cachedBMesh);
+                        continue;
                     }
-                    catch (Exception e)
+
+                    if (GetStatusConnected(space.left) && GetStatusConnected(space.up))
                     {
+                        meshes.Add(CreateMeshFromPoints(
+                            new List<Vector2>()
+                                { space.mainSquare.min,  new Vector2(space.mainSquare.min.x, space.mainSquare.max.y),space.mainSquare.max},
+                            space.mainSquare.center, space.size));
+                        continue;
                     }
+                    if (GetStatusConnected(space.left) && GetStatusConnected(space.down))
+                    {
+                        meshes.Add(CreateMeshFromPoints(
+                            new List<Vector2>()
+                                { new Vector2(space.mainSquare.min.x, space.mainSquare.max.y), space.mainSquare.max, new Vector2(space.mainSquare.max.x, space.mainSquare.min.y) },
+                            space.mainSquare.center, space.size));
+                        continue;
+                    }
+                    if (GetStatusConnected(space.right) && GetStatusConnected(space.up))
+                    {
+                        meshes.Add(CreateMeshFromPoints(
+                            new List<Vector2>()
+                                { space.mainSquare.min, new Vector2(space.mainSquare.min.x, space.mainSquare.max.y), new Vector2(space.mainSquare.max.x, space.mainSquare.min.y) },
+                            space.mainSquare.center, space.size));
+                        continue;
+                    }
+                    if (GetStatusConnected(space.right) && GetStatusConnected(space.down))
+                    {
+                        meshes.Add(CreateMeshFromPoints(
+                            new List<Vector2>()
+                                { space.mainSquare.min, space.mainSquare.max, new Vector2(space.mainSquare.max.x, space.mainSquare.min.y) },
+                            space.mainSquare.center, space.size));
+                        continue;
+                    }
+
+                    meshes.Add(CreateQuadMesh(space.size, space.mainSquare.max, space.mainSquare.min));
                 }
+
+                BMesh first = meshes[0];
+                for (int i = 1; i < meshes.Count; i++)
+                {
+                    BMeshOperators.Merge(first, meshes[i]);
+                }
+                foreach (var space in spaces)
+                {
+                    space.isTempted = false;
+                    space.isEmpty = true;
+                    space.cachedBMesh = null;
+                }
+                return first;
+            }
+
+            public static void AdjustBordersNew(List<HyperSpace> edges)
+            {
+                bool GetStatusConnected(HyperSpace space) => space is null || space.isEmpty;
                 
-                for (int i = 0; i <= additive.x; i++)
+                foreach (var space in edges)
                 {
-                    for (int j = 0; j <= additive.y; j++)
+                    if (space.isCurved)
                     {
-                        if(matrix[i,j]is null)
-                            continue;
-                        var hSpace = matrix[i, j];
-                        List<Vector2> points = new List<Vector2>();
-                        if (i + 1 != additive.x + 1 && j + 1 != additive.y + 1)
-                        {
-                            if (matrix[i + 1, j] is null && matrix[i, j + 1] is null)
+                        Debug.LogError("possible custom handle");
+                        continue;
+                    }
+
+                    if (GetStatusConnected(space.left) && GetStatusConnected(space.up))
+                    {
+                        space.cachedBMesh = CreateMeshFromPoints(
+                            new List<Vector2>()
                             {
-                                points.Clear();
-                                points.Add(new Vector2(hSpace.mainSquare.max.x, hSpace.mainSquare.min.y));
-                                points.Add(new Vector2(hSpace.mainSquare.min.x, hSpace.mainSquare.max.y));
-                                points.Add(hSpace.mainSquare.max);
-                                hSpace.cachedBMesh = CreateMeshFromPoints(points, hSpace.mainSquare.center,
-                                    hSpace.size);
-                                /*
-                                float down = -.2f;
-                                Vector2 center = Vector2.zero;
-                                foreach (var p in points)
-                                {
-                                    center += p;
-                                }
-
-                                center /= points.Count;
-
-                                BMesh first = new BMesh();
-                                first.AddVertexAttribute("uv", BMesh.AttributeBaseType.Float, 2);
-                                var vertices = new List<BMesh.Vertex>();
-                                vertices.Add(AddVertexToMesh(points[0].x, points[0].y, first, hSpace.size));
-                                vertices.Add(AddVertexToMesh(points[1].x, points[1].y, first, hSpace.size));
-                                vertices.Add(AddVertexToMesh(points[1].x+(points[1]-center).x, points[1].y+((points[1]-center)).y, first, hSpace.size,down));
-                                vertices.Add(AddVertexToMesh(points[0].x+((points[0]-center)).x, points[0].y+((points[0]-center)).y, first, hSpace.size,down));
-                                first.AddFace(vertices.ToArray());
-                                BMeshOperators.Merge(hSpace.cachedBMesh, first);
-                                */
-                            }
-                        }
-                        if (i - 1 != -1 && j + 1 != additive.y + 1)
-                        {
-                            if (matrix[i - 1, j] is null && matrix[i, j + 1] is null)
+                                space.mainSquare.min, new Vector2(space.mainSquare.min.x, space.mainSquare.max.y),
+                                space.mainSquare.max
+                            },
+                            space.mainSquare.center, space.size);
+                        space.isCurved = true;
+                        continue;
+                    }
+                    if (GetStatusConnected(space.left) && GetStatusConnected(space.down))
+                    {
+                        space.cachedBMesh = CreateMeshFromPoints(
+                            new List<Vector2>()
                             {
-                                points.Clear();
-                                points.Add(hSpace.mainSquare.max);
-                                points.Add(hSpace.mainSquare.min);
-                                points.Add(new Vector2(hSpace.mainSquare.min.x, hSpace.mainSquare.max.y));
-                                hSpace.cachedBMesh = CreateMeshFromPoints(points, hSpace.mainSquare.center,
-                                    hSpace.size);
-
-                            }
-                        }
-                        if (i + 1 != additive.x + 1 && j - 1 != -1)
-                        {
-                            if (matrix[i + 1, j] is null && matrix[i, j - 1] is null)
-                            { 
-                                points.Clear();
-                                points.Add(hSpace.mainSquare.max);
-                                points.Add(new Vector2(hSpace.mainSquare.max.x, hSpace.mainSquare.min.y));
-                                points.Add(hSpace.mainSquare.min);
-                                hSpace.cachedBMesh = CreateMeshFromPoints(points, hSpace.mainSquare.center,
-                                    hSpace.size);
-
-                            }
-                        }
-                        if (i - 1 !=  - 1 && j - 1 != -1)
-                        {
-                            if (matrix[i - 1, j] is null && matrix[i, j - 1] is null)
+                                new Vector2(space.mainSquare.min.x, space.mainSquare.max.y), space.mainSquare.max,
+                                new Vector2(space.mainSquare.max.x, space.mainSquare.min.y)
+                            },
+                            space.mainSquare.center, space.size);
+                        space.isCurved = true;
+                        continue;
+                    }
+                    if (GetStatusConnected(space.right) && GetStatusConnected(space.up))
+                    {
+                        space.cachedBMesh = CreateMeshFromPoints(
+                            new List<Vector2>()
                             {
-                                points.Clear();
-                                points.Add(new Vector2(hSpace.mainSquare.max.x, hSpace.mainSquare.min.y));
-                                points.Add(hSpace.mainSquare.min);
-                                points.Add(new Vector2(hSpace.mainSquare.min.x, hSpace.mainSquare.max.y));
-                                hSpace.cachedBMesh = CreateMeshFromPoints(points, hSpace.mainSquare.center,
-                                    hSpace.size);
-
-                            }
-                        }
+                                space.mainSquare.min, new Vector2(space.mainSquare.min.x, space.mainSquare.max.y),
+                                new Vector2(space.mainSquare.max.x, space.mainSquare.min.y)
+                            },
+                            space.mainSquare.center, space.size);
+                        space.isCurved = true;
+                        continue;
+                    }
+                    if (GetStatusConnected(space.right) && GetStatusConnected(space.down))
+                    {
+                        space.cachedBMesh = CreateMeshFromPoints(
+                            new List<Vector2>()
+                                { space.mainSquare.min, space.mainSquare.max, new Vector2(space.mainSquare.max.x, space.mainSquare.min.y) },
+                            space.mainSquare.center, space.size);
+                        space.isCurved = true;
+                        continue;
                     }
                 }
-                
             }
 
             public BMesh GetBMesh(bool skipFirst = false)
@@ -624,8 +634,8 @@ namespace IceCracks.Utilities
                                 maxDepth,
                                 currentDepth + 1, startPos, startPos + Vector2Int.one * currentStep)
                         );
-                        listedSubSpaces[^1].parent = this;
-                        listedSubSpaces[^1].currentId = new Vector2Int(i, j);
+                        //listedSubSpaces[^1].parent = this;
+                        //listedSubSpaces[^1].currentId = new Vector2Int(i, j);
                         currentY += boundsSize.y;
                     }
                     
@@ -666,13 +676,6 @@ namespace IceCracks.Utilities
 
             }
         }
-
-        public static Texture2D CopyTexture(Texture2D original)
-        {
-            Texture2D copyTexture = new Texture2D(original.width, original.height);
-            copyTexture.SetPixels(original.GetPixels());
-            copyTexture.Apply();
-            return copyTexture;
-        }
+        
     }
 }

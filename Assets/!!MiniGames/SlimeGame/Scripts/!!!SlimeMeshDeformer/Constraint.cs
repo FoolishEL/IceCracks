@@ -1,4 +1,5 @@
-public class Constraint {
+public class Constraint
+{
     public int i;
 
     public float restDistance;

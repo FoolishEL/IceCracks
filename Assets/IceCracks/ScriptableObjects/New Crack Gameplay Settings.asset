@@ -13,48 +13,42 @@ MonoBehaviour:
   m_Name: New Crack Gameplay Settings
   m_EditorClassIdentifier: 
   settings:
-  - texture: {fileID: 2800000, guid: 36a854e87a8f14075a56e44d90e67f69, type: 3}
-    cracksColor: {r: 0, g: 0.028357267, b: 1, a: 1}
+  - material: {fileID: 2100000, guid: cb7dee49c80f24a09a726b5fb7ee008b, type: 2}
     audioSetCracks:
     - {fileID: 8300000, guid: f8c97df48a72f4b238f1eb4ea9087020, type: 3}
     - {fileID: 8300000, guid: 6af2ea09fc0a54bbdaf3f00ec5cad797, type: 3}
     audioSetFreeze:
     - {fileID: 8300000, guid: f3749e5c4cd7e4325a14bf8325ea8631, type: 3}
     - {fileID: 8300000, guid: 496635a8c0d4b47cdb3d483e08f69969, type: 3}
-  - texture: {fileID: 2800000, guid: 3ea980b89721e4ce5a0be74dae669bc6, type: 3}
-    cracksColor: {r: 1, g: 0.73973227, b: 0, a: 1}
+  - material: {fileID: 2100000, guid: ed27169c00543488492ead1d72047455, type: 2}
     audioSetCracks:
     - {fileID: 8300000, guid: f8c97df48a72f4b238f1eb4ea9087020, type: 3}
     - {fileID: 8300000, guid: 6af2ea09fc0a54bbdaf3f00ec5cad797, type: 3}
     audioSetFreeze:
     - {fileID: 8300000, guid: f3749e5c4cd7e4325a14bf8325ea8631, type: 3}
     - {fileID: 8300000, guid: 496635a8c0d4b47cdb3d483e08f69969, type: 3}
-  - texture: {fileID: 2800000, guid: 8fe50ab7ae189407e8b2fbf19d21c112, type: 3}
-    cracksColor: {r: 0, g: 0.6970329, b: 1, a: 1}
+  - material: {fileID: 2100000, guid: 6662acc677a9547898c9d7da17fe46d9, type: 2}
     audioSetCracks:
     - {fileID: 8300000, guid: f8c97df48a72f4b238f1eb4ea9087020, type: 3}
     - {fileID: 8300000, guid: 6af2ea09fc0a54bbdaf3f00ec5cad797, type: 3}
     audioSetFreeze:
     - {fileID: 8300000, guid: f3749e5c4cd7e4325a14bf8325ea8631, type: 3}
     - {fileID: 8300000, guid: 496635a8c0d4b47cdb3d483e08f69969, type: 3}
-  - texture: {fileID: 2800000, guid: 3bca4ad5e8d91480babf492c1d6da539, type: 3}
-    cracksColor: {r: 0.4056604, g: 0.11100408, b: 0.001913497, a: 1}
+  - material: {fileID: 2100000, guid: c0df39bd584f848f6aa1f539719c66d1, type: 2}
     audioSetCracks:
     - {fileID: 8300000, guid: f8c97df48a72f4b238f1eb4ea9087020, type: 3}
     - {fileID: 8300000, guid: 6af2ea09fc0a54bbdaf3f00ec5cad797, type: 3}
     audioSetFreeze:
     - {fileID: 8300000, guid: f3749e5c4cd7e4325a14bf8325ea8631, type: 3}
     - {fileID: 8300000, guid: 496635a8c0d4b47cdb3d483e08f69969, type: 3}
-  - texture: {fileID: 2800000, guid: f1f252c521c8f4909958493a16b96fbe, type: 3}
-    cracksColor: {r: 0.4056604, g: 0.4056604, b: 0.4056604, a: 1}
+  - material: {fileID: 2100000, guid: cec8fc941724040aca0ea5dfc0950fca, type: 2}
     audioSetCracks:
     - {fileID: 8300000, guid: f8c97df48a72f4b238f1eb4ea9087020, type: 3}
     - {fileID: 8300000, guid: 6af2ea09fc0a54bbdaf3f00ec5cad797, type: 3}
     audioSetFreeze:
     - {fileID: 8300000, guid: f3749e5c4cd7e4325a14bf8325ea8631, type: 3}
     - {fileID: 8300000, guid: 496635a8c0d4b47cdb3d483e08f69969, type: 3}
-  - texture: {fileID: 2800000, guid: 89daa571c5d0843b7873b89de56c1149, type: 3}
-    cracksColor: {r: 1, g: 1, b: 1, a: 1}
+  - material: {fileID: 2100000, guid: bbd72d0ea50d242ed8e534d4c699df70, type: 2}
     audioSetCracks:
     - {fileID: 8300000, guid: f8c97df48a72f4b238f1eb4ea9087020, type: 3}
     - {fileID: 8300000, guid: 6af2ea09fc0a54bbdaf3f00ec5cad797, type: 3}

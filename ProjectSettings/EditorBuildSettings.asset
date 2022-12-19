@@ -11,4 +11,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/GeometryAlgorithms/Examples/Scenes/ExampleGeometry2D.unity
     guid: a618e13ac65f9644a884800b36d4c3ec
+  - enabled: 1
+    path: Assets/IceCracks/Test/Test.unity
+    guid: 54ff13fed09954834aaabbf2d8812956
   m_configObjects: {}

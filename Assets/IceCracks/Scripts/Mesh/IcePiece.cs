@@ -1,10 +1,12 @@
-using System;
+//using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+// using Jobberwocky.GeometryAlgorithms.Source.API;
+// using Jobberwocky.GeometryAlgorithms.Source.Core;
+// using Jobberwocky.GeometryAlgorithms.Source.Parameters;
 using Pet.Slime;
 using UnityEngine;
-using Random = System.Random;
 
 namespace IceCracks.CracksGeneration.Models
 {
@@ -17,39 +19,27 @@ namespace IceCracks.CracksGeneration.Models
         [SerializeField] private SimpleMeshViewWithCollider meshView;
         [SerializeField] private MeshCrackGenerator meshCrackGenerator;
         [SerializeField] private MeshCrackVisualizer meshCrackVisualizer;
-        [SerializeField] private List<float> percents;
 
         private HyperSpace currentData;
-        private bool isGenerated = false;
         private Bounds lastBoundCut;
         private List<BMesh> cachedBMesh;
         private List<Bounds> bounds = new List<Bounds>();
-        private Vector2 size;
         private List<HyperSpace> onEdge;
         public bool isNewMesh { get; private set; } = true;
 
-        public void Stop()
-        {
-            meshCrackGenerator.SetBusyStatus(new object());
-        }
-
-        public void SetupPiece(HyperSpace hyperSpace,Vector2 size,Camera raycastCamera)
+        public void SetupPiece(HyperSpace hyperSpace,Camera raycastCamera)
         {
             onEdge = new List<HyperSpace>();
             currentData = hyperSpace;
             meshView.SetMesh(currentData.GetBMesh());
             meshCrackVisualizer.Initialize(meshCrackGenerator);
             meshCrackGenerator.Initialize(meshCrackVisualizer,raycastCamera);
-            this.size = size;
             meshCrackGenerator.Model.OnNewCoreCreated += CutOffPieces;
             meshCrackGenerator.Model.DetochAllInRange += DetochAllInRange;
-            meshCrackVisualizer.OnCracksDrawn += OnCrackDrawn;
         }
 
         private void OnCrackDrawn()
         {
-            if (!isGenerated)
-                return;
             meshView.SetMesh(currentData.GetBMesh());
             ReCreateBounds();
         }
@@ -57,32 +47,28 @@ namespace IceCracks.CracksGeneration.Models
         private void OnDestroy()
         {
             meshCrackGenerator.Model.OnNewCoreCreated -= CutOffPieces;
-            meshCrackVisualizer.OnCracksDrawn -= OnCrackDrawn;
             meshCrackGenerator.Model.DetochAllInRange -= DetochAllInRange;
         }
         private void DetochAllInRange(Bounds obj)
         {
-            var bMeshes = new List<BMesh>();
-            currentData.GetAll(obj, bMeshes);
-            bMeshes = bMeshes.Where(c => c is not null).ToList();
-            if(bMeshes.Count==0)
-                return;
-            var first = bMeshes[0];
-            
-            for (int i = 1; i < bMeshes.Count;i++)
+            onEdge.Clear();
+            currentData.GetAll(obj, onEdge);
+            if (onEdge.Count == 0)
             {
-                var current = bMeshes[i];
-                BMeshOperators.Merge(first,current);
+                Debug.LogError("(((");
+                return;
             }
+            var mesh = HyperSpace.GetMeshFromArea(onEdge, obj);
+            onEdge.Clear();
 
             var item = CrackPiecePool.Instance.GetView();
             Vector2 position = obj.center;
             position = MathExtensions.Rebase(position, -Vector2.one, Vector2.one, -Vector2.one * 5, Vector2.one * 5);
-            item.SetMesh(first);
+            item.SetMesh(mesh);
             item.GetMeshRenderer().materials = new[] { Instantiate(meshCrackVisualizer.currentMaterial) };
-            item.CacheTexture(meshCrackVisualizer.GetCurrentTextureCopy());
-            
-            var swimmingObj = item.gameObject.GetComponent<IceCrackSwimming>();
+            //item.CacheTexture(meshCrackVisualizer.GetCurrentTextureCopy());
+
+            var swimmingObj = item.IceCrackSwimming;
             swimmingObj.offset = obj.center * -5f + Vector3.forward;
             swimmingObj.size = obj.size.magnitude;
             swimmingObj.numberOfVertex = GetClosestVertexId(position);
@@ -90,27 +76,24 @@ namespace IceCracks.CracksGeneration.Models
             obj.size *= 1.2f;
             onEdge.Clear();
             currentData.CutOut(obj, onEdge);
-            HyperSpace.AdjustBorders(onEdge);
+            HyperSpace.AdjustBordersNew(onEdge);
             onEdge.Clear();
+ 
+            OnCrackDrawn();
         }
         private async void CutOffPieces(List<BMesh> bMesh,List<Bounds>bounds,Bounds obj)
         {
             this.bounds = bounds;
             isNewMesh = false;
             cachedBMesh = bMesh;
-            isGenerated = false;
             onEdge.Clear();
             await currentData.CutOut(obj, onEdge);
-            HyperSpace.AdjustBorders(onEdge);
+            HyperSpace.AdjustBordersNew(onEdge);
             onEdge.Clear();
 
             //currentData.SplitBySquare(currentData.GetRawSquare() * .15f, onEdge, 2);
             lastBoundCut = obj;
-            isGenerated = true;
-            if (meshCrackVisualizer.IsDrawn)
-            {
-                OnCrackDrawn();
-            }
+            OnCrackDrawn();
         }
 
         private async void ReCreateBounds()
@@ -123,20 +106,18 @@ namespace IceCracks.CracksGeneration.Models
 
             await Task.Yield();
             Material mat = Instantiate(meshCrackVisualizer.currentMaterial);
-            await Task.WhenAny(cachedBMesh.Select((c, i) => SetCachedBMesh(c, bounds[i], mat)));
-            meshCrackGenerator.UnsetBusyStatus(this);
+            await Task.WhenAny(cachedBMesh.Select((c, i) => SetCachedBMesh(c, bounds[i], mat, items[i])));
         }
 
-        private async Task SetCachedBMesh(BMesh mesh,Bounds bounds,Material mat)
+        private async Task SetCachedBMesh(BMesh mesh,Bounds bounds,Material mat,SimpleMeshView item)
         {
-            SimpleMeshView item = CrackPiecePool.Instance.GetView();
             lastBoundCut = bounds;
             Vector2 position = lastBoundCut.center;
             position = MathExtensions.Rebase(position, -Vector2.one, Vector2.one, -Vector2.one * 5, Vector2.one * 5);
             lastBoundCut.extents *= .98f;
             item.SetMesh(mesh);
             item.GetMeshRenderer().materials = new[] { mat };
-            item.CacheTexture(meshCrackVisualizer.GetCurrentTextureCopy());
+            //item.CacheTexture(meshCrackVisualizer.GetCurrentTextureCopy());
 
             IceCrackSwimming swimmingObj = item.IceCrackSwimming;
             swimmingObj.offset = lastBoundCut.center * -5f + Vector3.forward;

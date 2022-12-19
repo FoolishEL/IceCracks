@@ -1,13 +1,16 @@
 using UnityEngine;
 using UnityEngine.Pool;
+using Debug = System.Diagnostics.Debug;
 
 namespace IceCracks.CracksGeneration
 {
+    using Settings;
     using Views;
     public class CrackPiecePool : MonoBehaviour
     {
         [SerializeField] private SimpleMeshView prefab;
         [SerializeField] private int maxSize = 120;
+        [SerializeField] private CrackGameplaySettings crackGameplaySettings;
         public static CrackPiecePool Instance { get; private set; }
 
         private ObjectPool<SimpleMeshView> objectPool;
@@ -27,6 +30,13 @@ namespace IceCracks.CracksGeneration
 
         private void PreparePool()
         {
+            prefab = Instantiate(prefab);
+            prefab.gameObject.SetActive(false);
+            if (crackGameplaySettings.TryGetCurrentSettings(out var settings))
+            {
+                prefab.GetMeshRenderer().materials = new[] { settings!.Value.material };
+            }
+
             objectPool = new ObjectPool<SimpleMeshView>
             (
                 () =>

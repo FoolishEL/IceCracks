@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using IceCracks.Utilities;
 using UnityEngine;
-using Random = System.Random;
 
 namespace IceCracks.CracksGeneration.Models
 {
@@ -57,7 +56,7 @@ namespace IceCracks.CracksGeneration.Models
             }
         }
     
-        public bool AddCracks(Vector2 relativePosition, float force)
+        public bool AddCracks(Vector2 relativePosition, float force,float percentage)
         {
             var position = new Vector2Int((int)(relativePosition.x * sizeOfTexture.x),
                 /*sizeOfTexture.y - */(int)(relativePosition.y * sizeOfTexture.y));
@@ -80,12 +79,13 @@ namespace IceCracks.CracksGeneration.Models
 
             if (isProlonged)
             {
-                rect.size = Vector3.one * .15f;
+                rect.size = Vector3.one * .15f * percentage;
                 DetochAllInRange.Invoke(rect);
                 return false;
             }
 
-            CrackCore core = new CrackCore(position, CrackExtensions.TOKEN_DEFAULT_CORE_CIRCLE_RADIUS, out var generated, force);
+            CrackCore core = new CrackCore(position, CrackExtensions.TOKEN_DEFAULT_CORE_CIRCLE_RADIUS * percentage,
+                out var generated, force);
             
             var res = CrackExtensions.SortVertices(core.ExitCrackPositions.Select(c => (Vector2)c), position);
             

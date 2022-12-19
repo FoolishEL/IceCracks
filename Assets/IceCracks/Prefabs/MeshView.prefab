@@ -116,6 +116,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   meshFilter: {fileID: 7743229968413863565}
   meshRenderer: {fileID: 4097879753015446500}
+  iceCrackSwimming: {fileID: 0}
   meshCollider: {fileID: 2841805481994570136}
 --- !u!114 &8260796031594523657
 MonoBehaviour:
@@ -154,12 +155,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fcdf727752e354b15941b1505c67d540, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  materialInitial: {fileID: 2100000, guid: ed27169c00543488492ead1d72047455, type: 2}
-  color: {r: 0, g: 0.011129055, b: 0.2264151, a: 1}
-  texture2D: {fileID: 2800000, guid: 78d9700918a2549a79eb25097c3c94c2, type: 3}
+  materialInitial: {fileID: 2100000, guid: cb7dee49c80f24a09a726b5fb7ee008b, type: 2}
   meshRenderer: {fileID: 4097879753015446500}
   settings: {fileID: 11400000, guid: 5db054741b4ed46ddae06f0113a3413f, type: 2}
-  IsDrawn: 0
+  speedOfAppear: 0.7
 --- !u!114 &343216886321660919
 MonoBehaviour:
   m_ObjectHideFlags: 0

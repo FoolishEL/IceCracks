@@ -51,7 +51,7 @@ namespace IceCracks.CracksGeneration.Generation
             Vector2 relativeToBottomLeft = relativeToCenter + sizeDelta / 2;
             Vector2Int pos = new Vector2Int((int)relativeToBottomLeft.x, (int)relativeToBottomLeft.y);
             pos.y = (int)sizeDelta.y - pos.y;
-            model.AddCracks(pos, CrackExtensions.TOKEN_DEBUG_INITIAL_CRACK_FORCE);
+            //model.AddCracks(pos, CrackExtensions.TOKEN_DEBUG_INITIAL_CRACK_FORCE);
             crackVisualizer.DrawCracks(model.GetPoints(), pos);
         }
     }

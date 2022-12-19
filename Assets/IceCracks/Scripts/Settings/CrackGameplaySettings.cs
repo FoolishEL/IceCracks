@@ -45,8 +45,8 @@ namespace IceCracks.Settings
     [Serializable]
     public struct IceSettings
     {
-        public Texture2D texture;
-        public Color cracksColor;
+        public Material material;
+        //public Color cracksColor;
         public List<AudioClip> audioSetCracks;
         public List<AudioClip> audioSetFreeze;
     }
