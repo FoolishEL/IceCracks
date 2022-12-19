@@ -1,12 +1,8 @@
-//using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-// using Jobberwocky.GeometryAlgorithms.Source.API;
-// using Jobberwocky.GeometryAlgorithms.Source.Core;
-// using Jobberwocky.GeometryAlgorithms.Source.Parameters;
-using Pet.Slime;
 using UnityEngine;
+using System.Linq;
+using Pet.Slime;
 
 namespace IceCracks.CracksGeneration.Models
 {

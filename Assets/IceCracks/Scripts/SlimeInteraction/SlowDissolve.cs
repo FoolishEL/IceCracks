@@ -58,7 +58,7 @@ namespace IceCracks.Interactions
                 yield return null;
                 currentTime += Time.deltaTime;
                 meshRenderer.materials[0].color = Color.Lerp(Color.white, Color.clear, currentTime / dissolveTime);
-                transform.GetChild(0).localScale = Vector3.Lerp(Vector3.one, Vector3.zero, currentTime / dissolveTime);
+                // transform.GetChild(0).localScale = Vector3.Lerp(Vector3.one, Vector3.zero, currentTime / dissolveTime);
             }
             CrackPiecePool.Instance.ReleaseView(view);
         }

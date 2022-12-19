@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using IceCracks.CracksGeneration.Extensions;
 using UnityEngine;
 
 namespace IceCracks.Utilities
@@ -242,7 +243,17 @@ namespace IceCracks.Utilities
                     meshes.Add(space.cachedBMesh);
                     continue;
                 }
-
+                Direction dir = Direction.NONE;
+                if (GetStatusConnected(space.left))
+                    dir |= Direction.Left;
+                if (GetStatusConnected(space.right))
+                    dir |= Direction.Right;
+                if (GetStatusConnected(space.up))
+                    dir |= Direction.Up;
+                if (GetStatusConnected(space.down))
+                    dir |= Direction.Down;
+                meshes.Add(space.GetBMeshFromDirection(dir));
+                continue;
                 if (GetStatusConnected(space.left) && GetStatusConnected(space.up))
                 {
                     meshes.Add(BMeshUtilities.CreateMeshFromPoints(
@@ -322,6 +333,17 @@ namespace IceCracks.Utilities
                     continue;
                 }
 
+                Direction dir = Direction.NONE;
+                if (GetStatusConnected(space.left))
+                    dir |= Direction.Left;
+                if (GetStatusConnected(space.right))
+                    dir |= Direction.Right;
+                if (GetStatusConnected(space.up))
+                    dir |= Direction.Up;
+                if (GetStatusConnected(space.down))
+                    dir |= Direction.Down;
+                space.cachedBMesh = space.GetBMeshFromDirection(dir);
+                continue;
                 if (GetStatusConnected(space.left) && GetStatusConnected(space.up))
                 {
                     space.cachedBMesh = BMeshUtilities.CreateMeshFromPoints(
@@ -481,6 +503,129 @@ namespace IceCracks.Utilities
             listedSubSpaces[^2].right = listedSubSpaces[^1];
             listedSubSpaces[^1].down = listedSubSpaces[GetId(splitCount - 2, splitCount - 1)];
             listedSubSpaces[GetId(splitCount - 2, splitCount - 1)].up = listedSubSpaces[^1];
+        }
+        
+        [Flags]
+        public enum Direction
+        {
+            NONE =0,
+            Up = 1,
+            Down = 2,
+            Right = 4,
+            Left = 8,
+
+            //2
+            UpRight = Up | Right,
+            UpLeft = Up | Left,
+            DownRight = Down | Right,
+            DownLeft = Down | Left,
+            UpDown = Down | Up,
+            RightLeft = Right | Left,
+
+            //3
+            UpRightLeft = UpRight | Left,
+            UpDownLeft = UpDown | Left,
+            RightLeftDown = RightLeft | Down,
+            UpDownRight = UpDown | Right,
+
+            //4
+            ALL = UpRightLeft | Down,
+        }
+
+        public BMesh GetBMeshFromDirection(Direction direction)
+        {
+            if (direction.HasFlag(Direction.ALL))
+            {
+                return BMeshUtilities.CreateVShape(new List<Vector2>()
+                {
+                    mainSquare.OnTop(.2f),
+                    mainSquare.OnTop(.8f),
+                    mainSquare.OnRight(.2f),
+                    mainSquare.OnRight(.8f),
+                    mainSquare.OnBottom(.8f),
+                    mainSquare.OnBottom(.2f),
+                    mainSquare.OnLeft(.8f),
+                    mainSquare.OnLeft(.2f)
+                }, size, out _);
+            }
+            if (direction.HasFlag(Direction.UpRightLeft))
+            {
+                return BMeshUtilities.CreateVShape(new List<Vector2>()
+                {
+                    mainSquare.BottomRight(),
+                    mainSquare.OnTop(.7f),
+                    mainSquare.OnTop(.3f),
+                    mainSquare.BottomLeft(),
+                }, size, out _);
+            }
+            if (direction.HasFlag(Direction.UpDownLeft))
+            {
+                return BMeshUtilities.CreateVShape(new List<Vector2>()
+                {
+                    mainSquare.BottomLeft(),
+                    mainSquare.OnRight(.7f),
+                    mainSquare.OnRight(.3f),
+                    mainSquare.TopLeft(),
+                }, size, out _);
+            }
+            if (direction.HasFlag(Direction.RightLeftDown))
+            {
+                return BMeshUtilities.CreateVShape(new List<Vector2>()
+                {
+                    mainSquare.TopLeft(),
+                    mainSquare.OnBottom(.3f),
+                    mainSquare.OnBottom(.7f),
+                    mainSquare.TopRight(),
+                }, size, out _);
+            }
+            if (direction.HasFlag(Direction.UpDownRight))
+            {
+                return BMeshUtilities.CreateVShape(new List<Vector2>()
+                {
+                    mainSquare.TopRight(),
+                    mainSquare.OnLeft(.3f),
+                    mainSquare.OnLeft(.7f),
+                    mainSquare.BottomRight(),
+                }, size, out _);
+            }
+            if (direction.HasFlag(Direction.UpRight))
+            {
+                return BMeshUtilities.CreateVShape(new List<Vector2>()
+                {
+                    mainSquare.BottomLeft(),
+                    mainSquare.BottomRight(),
+                    mainSquare.TopLeft(),
+                }, size, out _, new List<int>() { 0, 2 }, 1);
+            }
+            if (direction.HasFlag(Direction.UpLeft))
+            {
+                return BMeshUtilities.CreateVShape(new List<Vector2>()
+                {
+                    mainSquare.BottomLeft(),
+                    mainSquare.BottomRight(),
+                    mainSquare.TopRight(),
+                }, size, out _);
+            }
+            if (direction.HasFlag(Direction.DownRight))
+            {
+                return BMeshUtilities.CreateVShape(new List<Vector2>()
+                {
+                    mainSquare.BottomLeft(),
+                    mainSquare.TopRight(),
+                    mainSquare.TopLeft(),
+                }, size, out _);
+            }
+            if (direction.HasFlag(Direction.DownLeft))
+            {
+                return BMeshUtilities.CreateVShape(new List<Vector2>()
+                {
+                    mainSquare.TopLeft(),
+                    mainSquare.BottomRight(),
+                    mainSquare.TopRight(),
+                }, size, out _);
+            }
+
+            return BMeshUtilities.CreateQuadMesh(size, mainSquare.max, mainSquare.min);
         }
     }
 }

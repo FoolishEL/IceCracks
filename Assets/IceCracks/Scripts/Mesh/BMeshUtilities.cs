@@ -1,14 +1,10 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace IceCracks.Utilities
 {
     using CracksGeneration.Extensions;
     using Math;
-    using CracksGeneration;
 
     public static class BMeshUtilities
     {
@@ -169,7 +165,8 @@ namespace IceCracks.Utilities
             return false;
         }
 
-        public static BMesh CreateVShape(List<Vector2> points,Vector2 size,out Bounds bound)
+        public static BMesh CreateVShape(List<Vector2> points, Vector2 size, out Bounds bound,
+            List<int> ignoredSides = null, float defaultLength = .2f)
         {
             float down = -.2f;
             BMesh mesh = new BMesh();
@@ -180,45 +177,70 @@ namespace IceCracks.Utilities
                 vertices.Add(AddVertexToMesh(points[i].x, points[i].y, mesh, size));
             }
             mesh.AddFace(vertices.ToArray());
+            
             Vector2 center = Vector2.zero;
             points.ForEach(c => center += c);
             center /= points.Count;
             bound = new Bounds();
             bound.center = center;
-            List<Vector2> offsetPoints = new List<Vector2>();
+            //List<Vector2> offsetPoints = new List<Vector2>();
             foreach (var p in points)
             {
-                offsetPoints.Add(p + (p - center) * .2f);
+                //offsetPoints.Add(p + (p - center) * defaultLength);
                 bound.Encapsulate(p);
             }
 
             for (int i = 0; i < points.Count - 1; i++)
             {
-                BMesh first = new BMesh();
-                first.AddVertexAttribute("uv", BMesh.AttributeBaseType.Float, 2);
-                vertices = new List<BMesh.Vertex>();
-                vertices.Add(AddVertexToMesh(offsetPoints[i].x, offsetPoints[i].y, first, size,down));
-                vertices.Add(AddVertexToMesh(offsetPoints[i+1].x, offsetPoints[i+1].y, first, size,down));
-                vertices.Add(AddVertexToMesh(points[i+1].x, points[i+1].y, first, size));
-                vertices.Add(AddVertexToMesh(points[i].x, points[i].y, first, size));
-                first.AddFace(vertices.ToArray());
-                BMeshOperators.Merge(mesh, first);
+                if(ignoredSides is not null&& ignoredSides.Contains(i))
+                    continue;
+                BMeshOperators.Merge(mesh, CreateDownSide(points[i], points[i + 1], center, down, defaultLength, size));
+                // BMesh first = new BMesh();
+                // first.AddVertexAttribute("uv", BMesh.AttributeBaseType.Float, 2);
+                // vertices = new List<BMesh.Vertex>();
+                // vertices.Add(AddVertexToMesh(offsetPoints[i].x, offsetPoints[i].y, first, size,down));
+                // vertices.Add(AddVertexToMesh(offsetPoints[i+1].x, offsetPoints[i+1].y, first, size,down));
+                // vertices.Add(AddVertexToMesh(points[i+1].x, points[i+1].y, first, size));
+                // vertices.Add(AddVertexToMesh(points[i].x, points[i].y, first, size));
+                // first.AddFace(vertices.ToArray());
+                // BMeshOperators.Merge(mesh, first);
             }
 
-            BMesh third = new BMesh();
-            third.AddVertexAttribute("uv", BMesh.AttributeBaseType.Float, 2);
-            vertices = new List<BMesh.Vertex>();
-            vertices.Add(AddVertexToMesh(offsetPoints[^1].x, offsetPoints[^1].y, third, size,down));
-            vertices.Add(AddVertexToMesh(offsetPoints[0].x, offsetPoints[0].y, third, size,down));
-            vertices.Add(AddVertexToMesh(points[0].x, points[0].y, third, size));
-            vertices.Add(AddVertexToMesh(points[^1].x, points[^1].y, third, size));
-            third.AddFace(vertices.ToArray());
-            
-            BMeshOperators.Merge(mesh, third);
+            if (ignoredSides is null || !ignoredSides.Contains(points.Count-1))
+            {
+                BMeshOperators.Merge(mesh, CreateDownSide(points[^1], points[0], center, down, defaultLength, size));
+                // BMesh third = new BMesh();
+                // third.AddVertexAttribute("uv", BMesh.AttributeBaseType.Float, 2);
+                // vertices = new List<BMesh.Vertex>();
+                // vertices.Add(AddVertexToMesh(offsetPoints[^1].x, offsetPoints[^1].y, third, size, down));
+                // vertices.Add(AddVertexToMesh(offsetPoints[0].x, offsetPoints[0].y, third, size, down));
+                // vertices.Add(AddVertexToMesh(points[0].x, points[0].y, third, size));
+                // vertices.Add(AddVertexToMesh(points[^1].x, points[^1].y, third, size));
+                // third.AddFace(vertices.ToArray());
+                //
+                // BMeshOperators.Merge(mesh, third);
+            }
+
             return mesh;
         }
-        
 
+        public static BMesh CreateDownSide(Vector2 startPoint, Vector2 endPoint, Vector2 linesFrom, float depth,
+            float offset,Vector2 size)
+        {
+            Vector2 startDowned = startPoint + (startPoint - linesFrom) * offset;
+            Vector2 endDowned = endPoint + (endPoint - linesFrom) * offset;
+            BMesh first = new BMesh();
+            first.AddVertexAttribute("uv", BMesh.AttributeBaseType.Float, 2);
+            List<BMesh.Vertex> vertices = new List<BMesh.Vertex>();
+            vertices.Add(AddVertexToMesh(startDowned.x, startDowned.y, first, size,depth));
+            vertices.Add(AddVertexToMesh(endDowned.x, endDowned.y, first, size,depth));
+            vertices.Add(AddVertexToMesh(endPoint.x, endPoint.y, first, size));
+            vertices.Add(AddVertexToMesh(startPoint.x, startPoint.y, first, size));
+            first.AddFace(vertices.ToArray());
+            
+            return first;
+        }
+        
         private static BMesh.Vertex AddVertexToMesh(float x, float y, BMesh bMesh, Vector2 size, float height = 0f)
         {
             float initialX = (x + 1f) / 2f;
@@ -229,6 +251,32 @@ namespace IceCracks.Utilities
             vert.attributes["uv"] = new BMesh.FloatAttributeValue(initialX, initialY);
             return vert;
         }
+
+
+        #region BoundsExtensions
+        public static Vector2 TopLeft(this Bounds bounds) => new Vector2(bounds.min.x, bounds.max.y);
+
+        public static Vector2 BottomRight(this Bounds bounds) => new Vector2(bounds.max.x, bounds.min.y);
+
+        public static Vector2 TopRight(this Bounds bounds) => bounds.max;
+
+        public static Vector2 BottomLeft(this Bounds bounds) => bounds.min;
+
+        public static Vector2 OnLeft(this Bounds bounds, float p) =>
+            Vector2.Lerp(TopLeft(bounds), BottomLeft(bounds), p);
+
+        public static Vector2 OnRight(this Bounds bounds, float p) =>
+            Vector2.Lerp(TopRight(bounds), BottomRight(bounds), p);
+
+        public static Vector2 OnTop(this Bounds bounds, float p) =>
+            Vector2.Lerp(TopLeft(bounds), TopRight(bounds), p);
+
+        public static Vector2 OnBottom(this Bounds bounds, float p) =>
+            Vector2.Lerp(BottomLeft(bounds), BottomRight(bounds), p);
+
+
+
+        #endregion
 
     }
 }

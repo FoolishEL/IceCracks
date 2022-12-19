@@ -19,7 +19,7 @@ namespace IceCracks.CracksGeneration
 
         private CrackModel model;
         public CrackModel Model => model;
-        private float delay = .05f;
+        private float delay = .01f;
         private float lastTimeClicked;
 
 
