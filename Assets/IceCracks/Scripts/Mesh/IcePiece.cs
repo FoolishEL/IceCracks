@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace IceCracks.CracksGeneration.Models
 {
-    using static Utilities.BMeshUtilities;
+    using Utilities;
     using Interactions;
     using Views;
     using Math;
@@ -76,7 +76,7 @@ namespace IceCracks.CracksGeneration.Models
             obj.size *= 1.2f;
             onEdge.Clear();
             currentData.CutOut(obj, onEdge);
-            HyperSpace.AdjustBordersNew(onEdge);
+            HyperSpace.AdjustBorders(onEdge);
             onEdge.Clear();
  
             OnCrackDrawn();
@@ -88,7 +88,7 @@ namespace IceCracks.CracksGeneration.Models
             cachedBMesh = bMesh;
             onEdge.Clear();
             await currentData.CutOut(obj, onEdge);
-            HyperSpace.AdjustBordersNew(onEdge);
+            HyperSpace.AdjustBorders(onEdge);
             onEdge.Clear();
 
             //currentData.SplitBySquare(currentData.GetRawSquare() * .15f, onEdge, 2);

@@ -63,12 +63,12 @@ namespace IceCracks.CracksGeneration
 
         private void OnMouseEnter()
         {
-            GetCrackAction(.8f);
+            GetCrackAction(1f);
         }
 
         private void OnMouseDrag()
         {
-            GetCrackAction(.8f);
+            GetCrackAction(1f);
         }
 
         private Vector2Int GetPressPosition(Vector2 relativePos)

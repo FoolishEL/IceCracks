@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+#if UNITY_EDITOR
 using UnityEngine.SceneManagement;
+#endif
 
 namespace IceCracks.CracksGeneration
 {
+    using Utilities;
     using Views;
-    using static Utilities.BMeshUtilities;
     using Models;
     
     public class SplitMeshController : MonoBehaviour
