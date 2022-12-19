@@ -253,56 +253,6 @@ namespace IceCracks.Utilities
                 if (GetStatusConnected(space.down))
                     dir |= Direction.Down;
                 meshes.Add(space.GetBMeshFromDirection(dir));
-                continue;
-                if (GetStatusConnected(space.left) && GetStatusConnected(space.up))
-                {
-                    meshes.Add(BMeshUtilities.CreateMeshFromPoints(
-                        new List<Vector2>()
-                        {
-                            space.mainSquare.min, new Vector2(space.mainSquare.min.x, space.mainSquare.max.y),
-                            space.mainSquare.max
-                        },
-                        space.mainSquare.center, space.size));
-                    continue;
-                }
-
-                if (GetStatusConnected(space.left) && GetStatusConnected(space.down))
-                {
-                    meshes.Add(BMeshUtilities.CreateMeshFromPoints(
-                        new List<Vector2>()
-                        {
-                            new Vector2(space.mainSquare.min.x, space.mainSquare.max.y), space.mainSquare.max,
-                            new Vector2(space.mainSquare.max.x, space.mainSquare.min.y)
-                        },
-                        space.mainSquare.center, space.size));
-                    continue;
-                }
-
-                if (GetStatusConnected(space.right) && GetStatusConnected(space.up))
-                {
-                    meshes.Add(BMeshUtilities.CreateMeshFromPoints(
-                        new List<Vector2>()
-                        {
-                            space.mainSquare.min, new Vector2(space.mainSquare.min.x, space.mainSquare.max.y),
-                            new Vector2(space.mainSquare.max.x, space.mainSquare.min.y)
-                        },
-                        space.mainSquare.center, space.size));
-                    continue;
-                }
-
-                if (GetStatusConnected(space.right) && GetStatusConnected(space.down))
-                {
-                    meshes.Add(BMeshUtilities.CreateMeshFromPoints(
-                        new List<Vector2>()
-                        {
-                            space.mainSquare.min, space.mainSquare.max,
-                            new Vector2(space.mainSquare.max.x, space.mainSquare.min.y)
-                        },
-                        space.mainSquare.center, space.size));
-                    continue;
-                }
-
-                meshes.Add(BMeshUtilities.CreateQuadMesh(space.size, space.mainSquare.max, space.mainSquare.min));
             }
 
             BMesh first = meshes[0];
@@ -343,58 +293,6 @@ namespace IceCracks.Utilities
                 if (GetStatusConnected(space.down))
                     dir |= Direction.Down;
                 space.cachedBMesh = space.GetBMeshFromDirection(dir);
-                continue;
-                if (GetStatusConnected(space.left) && GetStatusConnected(space.up))
-                {
-                    space.cachedBMesh = BMeshUtilities.CreateMeshFromPoints(
-                        new List<Vector2>()
-                        {
-                            space.mainSquare.min, new Vector2(space.mainSquare.min.x, space.mainSquare.max.y),
-                            space.mainSquare.max
-                        },
-                        space.mainSquare.center, space.size);
-                    space.isCurved = true;
-                    continue;
-                }
-
-                if (GetStatusConnected(space.left) && GetStatusConnected(space.down))
-                {
-                    space.cachedBMesh = BMeshUtilities.CreateMeshFromPoints(
-                        new List<Vector2>()
-                        {
-                            new Vector2(space.mainSquare.min.x, space.mainSquare.max.y), space.mainSquare.max,
-                            new Vector2(space.mainSquare.max.x, space.mainSquare.min.y)
-                        },
-                        space.mainSquare.center, space.size);
-                    space.isCurved = true;
-                    continue;
-                }
-
-                if (GetStatusConnected(space.right) && GetStatusConnected(space.up))
-                {
-                    space.cachedBMesh = BMeshUtilities.CreateMeshFromPoints(
-                        new List<Vector2>()
-                        {
-                            space.mainSquare.min, new Vector2(space.mainSquare.min.x, space.mainSquare.max.y),
-                            new Vector2(space.mainSquare.max.x, space.mainSquare.min.y)
-                        },
-                        space.mainSquare.center, space.size);
-                    space.isCurved = true;
-                    continue;
-                }
-
-                if (GetStatusConnected(space.right) && GetStatusConnected(space.down))
-                {
-                    space.cachedBMesh = BMeshUtilities.CreateMeshFromPoints(
-                        new List<Vector2>()
-                        {
-                            space.mainSquare.min, space.mainSquare.max,
-                            new Vector2(space.mainSquare.max.x, space.mainSquare.min.y)
-                        },
-                        space.mainSquare.center, space.size);
-                    space.isCurved = true;
-                    continue;
-                }
             }
         }
 
@@ -534,6 +432,8 @@ namespace IceCracks.Utilities
 
         public BMesh GetBMeshFromDirection(Direction direction)
         {
+            float depth = -.2f;
+            float offset = .3f;
             if (direction.HasFlag(Direction.ALL))
             {
                 return BMeshUtilities.CreateVShape(new List<Vector2>()
@@ -546,19 +446,9 @@ namespace IceCracks.Utilities
                     mainSquare.OnBottom(.2f),
                     mainSquare.OnLeft(.8f),
                     mainSquare.OnLeft(.2f)
-                }, size, out _);
+                }, size, out _, null, offset);
             }
             if (direction.HasFlag(Direction.UpRightLeft))
-            {
-                return BMeshUtilities.CreateVShape(new List<Vector2>()
-                {
-                    mainSquare.BottomRight(),
-                    mainSquare.OnTop(.7f),
-                    mainSquare.OnTop(.3f),
-                    mainSquare.BottomLeft(),
-                }, size, out _);
-            }
-            if (direction.HasFlag(Direction.UpDownLeft))
             {
                 return BMeshUtilities.CreateVShape(new List<Vector2>()
                 {
@@ -566,9 +456,9 @@ namespace IceCracks.Utilities
                     mainSquare.OnRight(.7f),
                     mainSquare.OnRight(.3f),
                     mainSquare.TopLeft(),
-                }, size, out _);
+                }, size, out _, new List<int>(){3}, offset);
             }
-            if (direction.HasFlag(Direction.RightLeftDown))
+            if (direction.HasFlag(Direction.UpDownLeft))
             {
                 return BMeshUtilities.CreateVShape(new List<Vector2>()
                 {
@@ -576,9 +466,9 @@ namespace IceCracks.Utilities
                     mainSquare.OnBottom(.3f),
                     mainSquare.OnBottom(.7f),
                     mainSquare.TopRight(),
-                }, size, out _);
+                }, size, out _, new List<int>(){3}, offset);
             }
-            if (direction.HasFlag(Direction.UpDownRight))
+            if (direction.HasFlag(Direction.RightLeftDown))
             {
                 return BMeshUtilities.CreateVShape(new List<Vector2>()
                 {
@@ -586,43 +476,101 @@ namespace IceCracks.Utilities
                     mainSquare.OnLeft(.3f),
                     mainSquare.OnLeft(.7f),
                     mainSquare.BottomRight(),
-                }, size, out _);
+                }, size, out _, new List<int>(){3}, offset);
+            }
+            if (direction.HasFlag(Direction.UpDownRight))
+            {
+                return BMeshUtilities.CreateVShape(new List<Vector2>()
+                {
+                    mainSquare.BottomRight(),
+                    mainSquare.OnTop(.7f),
+                    mainSquare.OnTop(.3f),
+                    mainSquare.BottomLeft(),
+                }, size, out _, new List<int>(){3}, offset);
             }
             if (direction.HasFlag(Direction.UpRight))
             {
-                return BMeshUtilities.CreateVShape(new List<Vector2>()
+                var mesh = BMeshUtilities.CreateMeshFromPoints(new List<Vector2>()
                 {
                     mainSquare.BottomLeft(),
                     mainSquare.BottomRight(),
                     mainSquare.TopLeft(),
-                }, size, out _, new List<int>() { 0, 2 }, 1);
+                }, size);
+                BMeshOperators.Merge(mesh,
+                    BMeshUtilities.CreateDownSide(mainSquare.BottomRight(), mainSquare.TopLeft(),
+                        mainSquare.BottomLeft(), mainSquare.BottomLeft(),depth, offset, size));
+                return mesh;
             }
             if (direction.HasFlag(Direction.UpLeft))
             {
-                return BMeshUtilities.CreateVShape(new List<Vector2>()
+                var mesh = BMeshUtilities.CreateMeshFromPoints(new List<Vector2>()
                 {
                     mainSquare.BottomLeft(),
-                    mainSquare.BottomRight(),
                     mainSquare.TopRight(),
-                }, size, out _);
+                    mainSquare.TopLeft(),
+                }, size);
+                BMeshOperators.Merge(mesh,
+                    BMeshUtilities.CreateDownSide(mainSquare.BottomLeft(), mainSquare.TopRight(),
+                        mainSquare.TopLeft(),mainSquare.TopLeft(), depth, offset, size));
+                return mesh;
             }
             if (direction.HasFlag(Direction.DownRight))
             {
-                return BMeshUtilities.CreateVShape(new List<Vector2>()
+                var mesh = BMeshUtilities.CreateMeshFromPoints(new List<Vector2>()
                 {
                     mainSquare.BottomLeft(),
+                    mainSquare.BottomRight(),
                     mainSquare.TopRight(),
-                    mainSquare.TopLeft(),
-                }, size, out _);
+                }, size);
+                BMeshOperators.Merge(mesh,
+                    BMeshUtilities.CreateDownSide(mainSquare.TopRight(), mainSquare.BottomLeft(),
+                        mainSquare.BottomRight(),mainSquare.BottomRight(), depth, offset, size));
+                return mesh;
             }
             if (direction.HasFlag(Direction.DownLeft))
             {
-                return BMeshUtilities.CreateVShape(new List<Vector2>()
+                var mesh = BMeshUtilities.CreateMeshFromPoints(new List<Vector2>()
                 {
                     mainSquare.TopLeft(),
                     mainSquare.BottomRight(),
                     mainSquare.TopRight(),
-                }, size, out _);
+                }, size);
+                BMeshOperators.Merge(mesh,
+                    BMeshUtilities.CreateDownSide(mainSquare.TopLeft(), mainSquare.BottomRight(),
+                        mainSquare.TopRight(),mainSquare.TopRight(), depth, offset, size));
+                return mesh;
+            }
+            if (direction.HasFlag(Direction.Up))
+            {
+                var mesh = BMeshUtilities.CreateQuadMesh(size, mainSquare.max, mainSquare.min);
+                BMeshOperators.Merge(mesh,
+                    BMeshUtilities.CreateDownSide( mainSquare.BottomRight(),mainSquare.TopRight(),
+                         mainSquare.BottomLeft(),mainSquare.TopLeft(), depth, offset, size));
+                return mesh;
+            }
+            if (direction.HasFlag(Direction.Left))
+            {
+                var mesh = BMeshUtilities.CreateQuadMesh(size, mainSquare.max, mainSquare.min);
+                BMeshOperators.Merge(mesh,
+                    BMeshUtilities.CreateDownSide( mainSquare.BottomLeft(),mainSquare.BottomRight(),
+                        mainSquare.TopLeft(),mainSquare.TopRight(), depth, offset, size));
+                return mesh;
+            }
+            if (direction.HasFlag(Direction.Down))
+            {
+                var mesh = BMeshUtilities.CreateQuadMesh(size, mainSquare.max, mainSquare.min);
+                BMeshOperators.Merge(mesh,
+                    BMeshUtilities.CreateDownSide( mainSquare.TopLeft(),mainSquare.BottomLeft(),
+                        mainSquare.TopRight(),mainSquare.BottomRight(), depth, offset, size));
+                return mesh;
+            }
+            if (direction.HasFlag(Direction.Right))
+            {
+                var mesh = BMeshUtilities.CreateQuadMesh(size, mainSquare.max, mainSquare.min);
+                BMeshOperators.Merge(mesh,
+                    BMeshUtilities.CreateDownSide( mainSquare.TopRight(),mainSquare.TopLeft(),
+                        mainSquare.BottomRight(),mainSquare.BottomLeft(), depth, offset, size));
+                return mesh;
             }
 
             return BMeshUtilities.CreateQuadMesh(size, mainSquare.max, mainSquare.min);
